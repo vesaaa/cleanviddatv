@@ -23,7 +23,7 @@ MANIFEST = ROOT / "launcher" / "app" / "src" / "main" / "AndroidManifest.xml"
 GRADLE = ROOT / "launcher" / "app" / "build.gradle"
 ANDROID = "{http://schemas.android.com/apk/res/android}"
 
-LAUNCHER = "com.gathin.tvhome"
+LAUNCHER = "io.github.vesaaa.cleanviddatv"
 STOCK = "com.google.android.apps.tv.launcherx"
 HOME_QUERY = "cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME"
 SET_HOME = f"cmd package set-home-activity --user 0 {LAUNCHER}/.MainActivity"
@@ -43,7 +43,7 @@ LINK = re.compile(r"\]\(([^)\s]+)\)")
 HOME_ACTIVITIES = [
     "com.google.android.apps.tv.launcherx/.home.HomeActivity",
     "com.google.android.tungsten.setupwraith/.RecoveryActivity",
-    "com.gathin.tvhome/.MainActivity",
+    "io.github.vesaaa.cleanviddatv/.MainActivity",
     "com.express.at.factory.factorymanager/.FallbackHome",
     "com.android.tv.settings/.system.FallbackHome",
 ]

@@ -23,7 +23,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / "docs/specs/card.md"
-CARDS = ROOT / "launcher/app/src/main/java/com/gathin/tvhome/Cards.java"
+CARDS = ROOT / "launcher/app/src/main/java/io/github/vesaaa/cleanviddatv/Cards.java"
 STRINGS = ROOT / "launcher/app/src/main/res/values/strings.xml"
 SECTION = "### Reserved names"
 

@@ -295,9 +295,9 @@ class RecoveryRecordTest(unittest.TestCase):
         self.assertNotIn("pm enable com.example.already_off", sent)
 
     def test_custom_launcher_home_restores_the_stock_launcher(self):
-        custom = "com.gathin.tvhome/.MainActivity"
+        custom = "io.github.vesaaa.cleanviddatv/.MainActivity"
         self.tv(installed=["com.example.enabled", "com.example.already_off",
-                           "com.google.android.tvlauncher", "com.gathin.tvhome"],
+                           "com.google.android.tvlauncher", "io.github.vesaaa.cleanviddatv"],
                 home=custom)
         self.assertEqual(self.run_script("disable.sh", str(self.list_path)).returncode, 0)
         self.assertEqual(self.record()["home"], custom)
@@ -315,10 +315,10 @@ class RecoveryRecordTest(unittest.TestCase):
         self.assertLess(sent.index("pm enable com.google.android.tvlauncher"), sent.index(home[0]))
 
     def test_stock_launcher_disabled_before_cleanup_stays_disabled(self):
-        custom = "com.gathin.tvhome/.MainActivity"
+        custom = "io.github.vesaaa.cleanviddatv/.MainActivity"
         self.write_list(["com.example.enabled", "com.google.android.tvlauncher"])
         self.tv(installed=["com.example.enabled", "com.google.android.tvlauncher",
-                           "com.gathin.tvhome"],
+                           "io.github.vesaaa.cleanviddatv"],
                 disabled=["com.google.android.tvlauncher"], home=custom)
         self.assertEqual(self.run_script("disable.sh", str(self.list_path)).returncode, 0)
         self.assertEqual(self.record()["packages"]["com.google.android.tvlauncher"], "disabled")

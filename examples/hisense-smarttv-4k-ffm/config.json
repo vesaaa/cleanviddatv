@@ -1,5 +1,0 @@
-{
-  "hidden_apps": ["com.mediatek.wwtv.tvcenter", "com.hisense.tv.protector"],
-  "live_tv_package": "com.mediatek.wwtv.tvcenter",
-  "handle_view_inputs": true
-}

@@ -19,7 +19,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 STOCK = "com.google.android.tvlauncher"
-CUSTOM = "com.gathin.tvhome"
+CUSTOM = "io.github.vesaaa.cleanviddatv"
 
 # Stands in for tools/tv.py: answers the queries check.py makes, and applies what --fix sends.
 FAKE_TV = r'''

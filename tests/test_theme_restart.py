@@ -18,8 +18,8 @@ from unittest.mock import patch
 
 from tools import theme_restart as restart
 
-HOME = 'com.gathin.tvhome/.HomeKeyService'
-INPUT = 'com.gathin.tvhome/.InputKeyService'
+HOME = 'io.github.vesaaa.cleanviddatv/.HomeKeyService'
+INPUT = 'io.github.vesaaa.cleanviddatv/.InputKeyService'
 OTHER = 'com.example.mapper/.Service'
 EXTRA = 'com.example.reader/.Service'
 
@@ -28,7 +28,7 @@ def service(component=HOME, user=0, connected=True):
     # ServiceRecord.dump/IntentBindRecord.dumpInService in AOSP Android 8/11/14.
     return f'''  * ServiceRecord{{a1 u{user} {component}}}
     intent={{cmp={component}}}
-    app=ProcessRecord{{b2 1234:com.gathin.tvhome/u{user}a101}}
+    app=ProcessRecord{{b2 1234:io.github.vesaaa.cleanviddatv/u{user}a101}}
     Bindings:
     * IntentBindRecord{{c3 CREATE}}:
       intent={{cmp={component}}}
@@ -36,15 +36,15 @@ def service(component=HOME, user=0, connected=True):
       requested=true received={'true' if connected else 'false'} hasBound=true doRebind=false
       * Client AppBindRecord{{e5 ProcessRecord{{f6 222:system/1000}}}}
         Per-process Connections:
-          ConnectionRecord{{d7 u{user} CR com.gathin.tvhome/.HomeKeyService:@d4}}
+          ConnectionRecord{{d7 u{user} CR io.github.vesaaa.cleanviddatv/.HomeKeyService:@d4}}
     All Connections:
-      ConnectionRecord{{d7 u{user} CR com.gathin.tvhome/.HomeKeyService:@d4}}
+      ConnectionRecord{{d7 u{user} CR io.github.vesaaa.cleanviddatv/.HomeKeyService:@d4}}
 '''
 
 
 class TV:
     def __init__(self, saved=OTHER + ':' + HOME, delay=1, minimum_off=2, late=None,
-                 never=False, user=0, flag='1', home='com.gathin.tvhome/.MainActivity'):
+                 never=False, user=0, flag='1', home='io.github.vesaaa.cleanviddatv/.MainActivity'):
         self.saved = saved
         self.value = saved
         self.flag = flag
@@ -70,7 +70,7 @@ class TV:
         self.now += duration
         if self.late is not None and self.now >= self.late:
             self.value = ':'.join(x for x in self.value.split(':')
-                                  if not x.startswith('com.gathin.tvhome/'))
+                                  if not x.startswith('io.github.vesaaa.cleanviddatv/'))
             self.bound = set()
             self.late = None
         if self.ready is not None and self.now >= self.ready and not self.never:
@@ -99,7 +99,7 @@ class TV:
                 output += self.home
             elif args[:2] == ['am', 'force-stop']:
                 self.value = ':'.join(x for x in self.value.split(':')
-                                      if not x.startswith('com.gathin.tvhome/'))
+                                      if not x.startswith('io.github.vesaaa.cleanviddatv/'))
                 self.bound = set()
                 self.ready = None
             elif args[0] == 'settings':
@@ -122,13 +122,13 @@ class TV:
             elif args[:3] == ['dumpsys', 'activity', 'services']:
                 output += ''.join(service(x, user=self.user, connected=x in self.bound)
                                   for x in restart.components(self.value)
-                                  if x.startswith('com.gathin.tvhome/'))
+                                  if x.startswith('io.github.vesaaa.cleanviddatv/'))
         return output + '\n__CYT_THEME_RC__0\n'
 
 
 class BindingProbe(unittest.TestCase):
     def test_short_and_full_component_names(self):
-        for component in (HOME, 'com.gathin.tvhome/com.gathin.tvhome.HomeKeyService'):
+        for component in (HOME, 'io.github.vesaaa.cleanviddatv/io.github.vesaaa.cleanviddatv.HomeKeyService'):
             self.assertEqual(restart.bound_services(service(component), 0), set(restart.components(HOME)))
 
     def test_component_only_and_accessibility_action_bindings(self):
@@ -149,7 +149,7 @@ class BindingProbe(unittest.TestCase):
                               ('hasBound=true', 'hasBound=false'),
                               ('requested=true', 'requested=false'),
                               (':system/1000', ':com.example/10123'),
-                              ('app=ProcessRecord{b2 1234:com.gathin.tvhome/u0a101}', 'app=null'),
+                              ('app=ProcessRecord{b2 1234:io.github.vesaaa.cleanviddatv/u0a101}', 'app=null'),
                               ('intent={cmp=', 'intent={act=com.example.Unrelated cmp=')]:
             with self.subTest(after=after):
                 self.assertFalse(restart.bound_services(service().replace(before, after), 0))
@@ -191,7 +191,7 @@ class Recovery(unittest.TestCase):
         self.assertTrue(set(restart.components(HOME + ':' + INPUT)) <= tv.bound)
 
     def test_no_helper_has_no_settings_writes_or_waits(self):
-        for saved in ('null', '', OTHER, 'com.gathin.tvhome.other/.Service'):
+        for saved in ('null', '', OTHER, 'io.github.vesaaa.cleanviddatv.other/.Service'):
             with self.subTest(saved=saved):
                 tv = TV(saved=saved)
                 restart.restart(tv, tv.pause)
@@ -216,7 +216,7 @@ class Recovery(unittest.TestCase):
         tv = TV(home='com.google.android.apps.tv.launcherx/.HomeActivity')
         restart.restart(tv, tv.pause)
         start = next(x for x in tv.calls if x.startswith('am start '))
-        self.assertIn('-n com.gathin.tvhome/.MainActivity', start)
+        self.assertIn('-n io.github.vesaaa.cleanviddatv/.MainActivity', start)
         tv = TV()
         restart.restart(tv, tv.pause)
         start = next(x for x in tv.calls if x.startswith('am start '))

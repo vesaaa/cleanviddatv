@@ -46,7 +46,7 @@ this file repeats their rules in the form an agent needs, and links to them for 
 - **Disable in small batches** and screenshot between them (`tools/tv.py --screenshot shots/01.png`).
   Live TV, HDMI and some streaming apps give empty screenshots; that is the TV, not damage.
 - **An injected key is not proof** for a remote button that goes through an accessibility helper: ask the
-  person to press the real button. `am force-stop com.gathin.tvhome` switches those helpers off.
+  person to press the real button. `am force-stop io.github.vesaaa.cleanviddatv` switches those helpers off.
 - **Close ADB afterwards.** USB debugging and Network/ADB debugging off, authorisations revoked, reboot,
   then `tools/adb-closed.py <tv ip>` must report the port closed. Port 5555 is plaintext.
 - **Stop and say so** when the TV refuses: `pm disable-user` refused for every package, a sideload that
@@ -72,7 +72,7 @@ share their TV's list afterwards, follow [`docs/workflows/tv-list.md`](docs/work
 | `CODE_OF_CONDUCT.md` | Includes the rule against publishing device identifiers, Wi-Fi names and IPs. |
 | `examples/` | One folder per tested TV model: `debloat.txt`, `tv.json` (its row in the TV tables), sometimes a `README.md` and a `config.json`. Indexed in `examples/README.md`, whose table is generated too. |
 | `docs/` | `docs/TROUBLESHOOTING.md`, the module-card contract (`docs/modules.md`), `docs/devices/` for models with notes but no tested list, and the [workflows](#workflows). |
-| `launcher/` | The reference launcher, package `com.gathin.tvhome`: plain Java, AndroidX RecyclerView and DynamicAnimation, `minSdk` 26, no `INTERNET` permission. |
+| `launcher/` | The reference launcher, package `io.github.vesaaa.cleanviddatv`: plain Java, AndroidX RecyclerView and DynamicAnimation, `minSdk` 26, no `INTERNET` permission. |
 | `themes/` | One folder per theme: `config.json`, a required `screenshot.jpg`, optional wallpapers. Keys are documented in `themes/README.md`. |
 | `addons/` | Optional module-card apps, each its own Gradle project, never built into the launcher. |
 | `tools/` | The ADB client (`tv.py`) and the scripts, listed in the README's Tools table. Shell scripts have PowerShell twins. Each script's usage is in its first lines, and the larger ones have a guide beside them (`tools/*.md`): read it before running the script. |

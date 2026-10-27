@@ -151,10 +151,10 @@ class WrongHandlerRestoreTest(unittest.TestCase):
     def test_restoring_the_one_app_list_brings_the_stock_launcher_back_as_home(self):
         # The main list is applied and launcher/build-and-install.sh has made this project's
         # launcher Home, disabling the stock launcher outside any list. Then the one-app list goes on.
-        custom = "com.gathin.tvhome/.MainActivity"
+        custom = "io.github.vesaaa.cleanviddatv/.MainActivity"
         stock = "com.google.android.tvlauncher"
         self.write_list([ES])
-        self.tv(installed=[ES, stock, "com.gathin.tvhome"], disabled=[stock], home=custom)
+        self.tv(installed=[ES, stock, "io.github.vesaaa.cleanviddatv"], disabled=[stock], home=custom)
         with mock.patch.dict(os.environ, {"HANDLERS_ALLOW": "1"}):
             result = self.run_script("disable.sh", str(self.list_path))
         self.assertEqual(result.returncode, 0, result.stderr)

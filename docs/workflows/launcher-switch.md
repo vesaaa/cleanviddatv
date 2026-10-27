@@ -6,7 +6,7 @@ The core takes a switch only if it changes nothing until a theme or `config.xml`
 
 1. Add the key to `launcher/app/src/main/res/values/config.xml` with a comment that says what it does and
    that a theme can set it, defaulting to off (`false`, `0` or the current behaviour).
-2. Read it in `launcher/app/src/main/java/com/gathin/tvhome/Config.java`, from the resource and from the
+2. Read it in `launcher/app/src/main/java/io/github/vesaaa/cleanviddatv/Config.java`, from the resource and from the
    theme JSON, the way existing keys such as `show_stats` are read.
 3. Add a row to the Keys table in `themes/README.md`, and the key's screenshot row in `docs/switches.md`
    (`docs/switches/<key>.jpg`, from a real TV with the key on: 16:9, under 300 KB, personal things blurred);
@@ -16,7 +16,7 @@ The core takes a switch only if it changes nothing until a theme or `config.xml`
    and every `values-*` folder.
 5. With the key off, nothing new runs: no receiver, no service, no write, no permission grant in the install
    script. The bot checks this in the diff, not in the description.
-6. Add a JVM unit test under `launcher/app/src/test/java/com/gathin/tvhome/` for any logic that can be tested
+6. Add a JVM unit test under `launcher/app/src/test/java/io/github/vesaaa/cleanviddatv/` for any logic that can be tested
    without a TV.
 7. Keep it small: a switch should cost a few hundred bytes to about 1 KB of APK. Build and check the size
    gate; the gate is hard.

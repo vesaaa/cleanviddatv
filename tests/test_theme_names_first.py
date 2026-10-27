@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import test_theme_push_ownership as push  # noqa: E402  (imported as a module so its tests do not run twice)
 
 TOOLS = push.TOOLS
-URI = "content://com.gathin.tvhome.theme"
+URI = "content://io.github.vesaaa.cleanviddatv.theme"
 
 
 class ThemeNamesFirstTest(unittest.TestCase):

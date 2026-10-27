@@ -44,7 +44,7 @@ class Device:
         calls.append(command)
         log.write_text(json.dumps(calls))
         if "resolve-activity" in command:
-            return "priority=0\\n  com.gathin.tvhome/.MainActivity\\n"
+            return "priority=0\\n  io.github.vesaaa.cleanviddatv/.MainActivity\\n"
         if "dumpsys package" in command:
             return "versionName=1.2.3"
         return ""

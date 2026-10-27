@@ -7,7 +7,7 @@ from tools import bench
 
 class PssSummaryTest(unittest.TestCase):
     def read(self, output):
-        return bench.pss_of(SimpleNamespace(shell=lambda command: output), "com.gathin.tvhome")
+        return bench.pss_of(SimpleNamespace(shell=lambda command: output), "io.github.vesaaa.cleanviddatv")
 
     def test_android_8_summary(self):
         # ActivityThread.java, android-8.0.0_r1, lines 2547-2554.
@@ -27,7 +27,7 @@ class PssSummaryTest(unittest.TestCase):
         self.assertEqual(self.read("    TOTAL PSS:    0    TOTAL RSS:    8192\n"), 0)
 
     def test_no_pss_summary_is_unknown(self):
-        for output in ("", "No process found for: com.gathin.tvhome",
+        for output in ("", "No process found for: io.github.vesaaa.cleanviddatv",
                        "TOTAL RSS: 98304", "TOTAL SWAP PSS: 2048",
                        "TOTAL PSS: unavailable", "TOTAL 65536 98304"):
             with self.subTest(output=output):

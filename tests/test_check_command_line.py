@@ -27,7 +27,7 @@ from test_drift_check import FAKE_TV  # noqa: E402  (the simulated TV check.py a
 
 ROOT = Path(__file__).resolve().parents[1]
 STOCK = "com.google.android.tvlauncher"
-CUSTOM = "com.gathin.tvhome"
+CUSTOM = "io.github.vesaaa.cleanviddatv"
 # Google TV's stock launcher, which the list leaves out: build-and-install.sh disables it instead.
 LAUNCHERX = "com.google.android.apps.tv.launcherx"
 

@@ -119,7 +119,7 @@ class HelperTableTest(unittest.TestCase):
         for row, service in ROWS.items():
             with self.subTest(row=row):
                 self.assertIn(row, self.rows)
-                self.assertIn(f"`com.gathin.tvhome/.{service}`", self.rows[row][1])
+                self.assertIn(f"`io.github.vesaaa.cleanviddatv/.{service}`", self.rows[row][1])
 
     def test_each_row_names_every_list_its_helper_reads(self):
         for row, service in ROWS.items():

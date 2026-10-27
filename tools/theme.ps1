@@ -17,7 +17,7 @@ if ($Theme) { $Theme = (Resolve-Path $Theme).Path }
 Set-Location $PSScriptRoot
 $py = 'venv\Scripts\python.exe'
 if (-not (Test-Path $py)) { throw 'run: python -m venv tools\venv; tools\venv\Scripts\python.exe -m pip install -r tools\requirements.txt' }
-$pkg = 'com.gathin.tvhome'
+$pkg = 'io.github.vesaaa.cleanviddatv'
 # Runs tools\tv.py or b64push.py and stops on a non-zero exit: 'Stop' only covers cmdlets, so a failed
 # native call would otherwise fall through to "Theme ... is on the TV".
 function Invoke-Tv {

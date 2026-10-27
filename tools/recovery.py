@@ -32,7 +32,7 @@ SCALE_RE = re.compile(r"-?\d+(\.\d+)?")
 SETTINGS = ("window_animation_scale", "transition_animation_scale", "animator_duration_scale")
 # This project's own launcher. When it already owned Home before debloating, restoring Home to it
 # would leave the stock launcher off, so restore goes back to the stock one instead.
-CUSTOM_LAUNCHER = "com.gathin.tvhome"
+CUSTOM_LAUNCHER = "io.github.vesaaa.cleanviddatv"
 # What answers HOME without being a launcher, the cases disable.sh, disable.ps1 and check.py skip too:
 # the setup wizards and the settings apps (on Google TV, setupwraith's .RecoveryActivity takes Home and
 # system_server crash-loops on it), a vendor's FallbackHome, the placeholder a TCL or a Xiaomi shows

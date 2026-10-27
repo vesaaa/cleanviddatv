@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-JAVA = ROOT / 'launcher/app/src/main/java/com/gathin/tvhome'
+JAVA = ROOT / 'launcher/app/src/main/java/io/github/vesaaa/cleanviddatv'
 
 
 class TopBarLaunchActionsTest(unittest.TestCase):

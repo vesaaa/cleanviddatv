@@ -33,7 +33,7 @@ ROOT = Path(__file__).resolve().parents[1]
 README = ROOT / "README.md"
 CHECK = ROOT / "tools" / "check.py"
 STOCK = "com.google.android.tvlauncher"
-CUSTOM = "com.gathin.tvhome"
+CUSTOM = "io.github.vesaaa.cleanviddatv"
 HEADING = "## After a firmware update"
 
 

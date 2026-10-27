@@ -196,7 +196,7 @@ class SetValueTest(unittest.TestCase):
 
     def test_the_readers_it_copies_are_still_strict(self):
         """A launcher that started coercing types would make set's refusals wrong, so pin the readers."""
-        config = (ROOT / "launcher/app/src/main/java/com/gathin/tvhome/Config.java").read_text(encoding="utf-8")
+        config = (ROOT / "launcher/app/src/main/java/io/github/vesaaa/cleanviddatv/Config.java").read_text(encoding="utf-8")
         self.assertIn("Object v = o.opt(key);", config)
         self.assertIn("return v instanceof Boolean ? (Boolean) v : fallback;", config)
         self.assertIn('return v instanceof String ? ((String) v).trim() : fallback;', config)

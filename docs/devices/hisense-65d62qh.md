@@ -62,7 +62,7 @@ The one thing that differed on the failing setup is visible in `logcat`: the ven
 service was also enabled then —
 
 ```text
-I HisXiaoJu: initAccessibilityService(), services = com.hisense.vidaaassistant/…AppAccessibilityService : com.gathin.tvhome/.HomeKeyService
+I HisXiaoJu: initAccessibilityService(), services = com.hisense.vidaaassistant/…AppAccessibilityService : io.github.vesaaa.cleanviddatv/.HomeKeyService
 ```
 
 Two services filtering key events at once is the failure mode this repo records for other firmware.
@@ -90,7 +90,7 @@ manually because this TV also requires disabling `com.keylab.speech.view.vidaa` 
 scripts do not know about that vendor package:
 
 ```powershell
-tools\venv\Scripts\python.exe -I tools\tv.py 'cmd package set-home-activity com.gathin.tvhome/.MainActivity'
+tools\venv\Scripts\python.exe -I tools\tv.py 'cmd package set-home-activity io.github.vesaaa.cleanviddatv/.MainActivity'
 tools\venv\Scripts\python.exe -I tools\tv.py 'pm disable-user --user 0 com.jamdeo.tv.vod'
 tools\venv\Scripts\python.exe -I tools\tv.py 'pm disable-user --user 0 com.keylab.speech.view.vidaa'
 ```
@@ -134,7 +134,7 @@ What did **not** work:
   the manifest with `RECEIVE_BOOT_COMPLETED granted=true`, but the launch was silently dropped: not a
   single line of the receiver's own logging appeared. `BOOT_COMPLETED` is not on Android's
   background-activity-launch exemption list.
-- `appops set com.gathin.tvhome SYSTEM_ALERT_WINDOW allow`: refused on this firmware (the op stays
+- `appops set io.github.vesaaa.cleanviddatv SYSTEM_ALERT_WINDOW allow`: refused on this firmware (the op stays
   `default`, and its `rejectTime` records the refused background launch).
 
 A local launcher build with an experimental `boot_start_home` change was tested separately, but that

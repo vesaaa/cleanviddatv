@@ -25,8 +25,8 @@ def read(relative):
 
 
 CONFIG_XML = read("launcher/app/src/main/res/values/config.xml")
-CONFIG_JAVA = read("launcher/app/src/main/java/com/gathin/tvhome/Config.java")
-HOME_KEY = read("launcher/app/src/main/java/com/gathin/tvhome/HomeKeyService.java")
+CONFIG_JAVA = read("launcher/app/src/main/java/io/github/vesaaa/cleanviddatv/Config.java")
+HOME_KEY = read("launcher/app/src/main/java/io/github/vesaaa/cleanviddatv/HomeKeyService.java")
 THEMES_README = read("themes/README.md")
 TROUBLE = read("docs/TROUBLESHOOTING.md")
 

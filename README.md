@@ -682,7 +682,7 @@ and a wallpaper.
 English, German, Danish, Spanish, Catalan, French, Russian, Serbian (Latin), Polish, Czech, Italian, Portuguese,
 Turkish, Arabic, Hebrew, Simplified Chinese, Traditional Chinese (Taiwan), Thai, Finnish, Vietnamese,
 Bangla, Indonesian, Norwegian Bokmål, Swedish, Dutch, Uzbek (Latin), Ukrainian and Korean. The launcher follows the TV's language. Android 13+ can set it for the launcher
-alone: `tools/tv.py 'cmd locale set-app-locales com.gathin.tvhome --locales ca'`.
+alone: `tools/tv.py 'cmd locale set-app-locales io.github.vesaaa.cleanviddatv --locales ca'`.
 
 Hebrew mirrors the layout: menu buttons on the left, date and clock on the right with the greeting above,
 dock and app rows starting on the right with matching remote navigation, the input selector's icons and
@@ -708,7 +708,7 @@ contract: [`docs/specs/card.md`](docs/specs/card.md).
 Pick "Clock" in the TV's screensaver settings, or over ADB:
 
 ```bash
-tools/tv.py 'settings put secure screensaver_components com.gathin.tvhome/.ClockDream; settings put secure screensaver_enabled 1'
+tools/tv.py 'settings put secure screensaver_components io.github.vesaaa.cleanviddatv/.ClockDream; settings put secure screensaver_enabled 1'
 ```
 
 </details>
@@ -853,7 +853,7 @@ its home screen on to this launcher. On the Chromecast with Google TV 4K that se
 folder's `debloat-keep-cast.txt`, not its `debloat.txt`, which disables setupwraith and the
 screensaver pair the redirect setup keeps. On the Acer AR55AR2851UDPRO it is the folder's
 `debloat.txt`. Check those lists with the stock launcher as the second argument. Without it the
-check expects `com.gathin.tvhome` on Home, so every run reports Home as drift, and `--fix` tries to
+check expects `io.github.vesaaa.cleanviddatv` on Home, so every run reports Home as drift, and `--fix` tries to
 move Home to it, which those TVs do not keep:
 
 ```bash

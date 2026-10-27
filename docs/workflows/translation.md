@@ -31,7 +31,7 @@
    on every pull request. `README.md` quotes the launcher at about 532 KB, so a full language can be the
    difference between green and a failed build. A language that does not fit is a maintainer decision, not
    something to land by dropping strings ([#1271](https://github.com/Gathin23/cleanyourtv/issues/1271)).
-8. Build the launcher, set the TV's language (Android 13+: `tools/tv.py 'cmd locale set-app-locales com.gathin.tvhome --locales <tag>'`)
+8. Build the launcher, set the TV's language (Android 13+: `tools/tv.py 'cmd locale set-app-locales io.github.vesaaa.cleanviddatv --locales <tag>'`)
    and attach a screenshot. Right-to-left languages mirror the layout like Hebrew; `tests/test_hebrew_resources.py`
    checks that `layout-iw` keeps every view.
 

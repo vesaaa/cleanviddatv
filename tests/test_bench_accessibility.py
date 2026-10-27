@@ -20,7 +20,7 @@ import unittest
 
 from tools import bench
 
-OURS = "com.gathin.tvhome/.KeyRemapService"
+OURS = "io.github.vesaaa.cleanviddatv/.KeyRemapService"
 OTHER = "com.exemplo.outroapp/.Servico"
 
 
@@ -53,24 +53,24 @@ class FakeTV:
 class RestoreAccessibilityTest(unittest.TestCase):
     def test_another_apps_service_is_kept(self):
         tv = FakeTV("com.outro.novo/.Svc")
-        bench.restore_accessibility(tv, "com.gathin.tvhome", [OURS])
+        bench.restore_accessibility(tv, "io.github.vesaaa.cleanviddatv", [OURS])
         self.assertEqual(tv.setting, f"com.outro.novo/.Svc:{OURS}")
 
     def test_does_not_add_the_same_service_twice(self):
         tv = FakeTV(OURS)
-        bench.restore_accessibility(tv, "com.gathin.tvhome", [OURS])
+        bench.restore_accessibility(tv, "io.github.vesaaa.cleanviddatv", [OURS])
         self.assertEqual(tv.setting, OURS)
         self.assertEqual(len(tv.commands), 1, "nothing to write means no command at all")
 
     def test_short_and_long_component_forms_are_the_same_component(self):
         """The TV rewrites `pkg/pkg.Classe` as `pkg/.Classe`; restoring must not duplicate it."""
-        tv = FakeTV("com.gathin.tvhome/com.gathin.tvhome.KeyRemapService")
-        bench.restore_accessibility(tv, "com.gathin.tvhome", [OURS])
+        tv = FakeTV("io.github.vesaaa.cleanviddatv/io.github.vesaaa.cleanviddatv.KeyRemapService")
+        bench.restore_accessibility(tv, "io.github.vesaaa.cleanviddatv", [OURS])
         self.assertEqual(tv.setting.count("KeyRemapService"), 1, tv.setting)
 
     def test_null_setting_is_treated_as_empty(self):
         tv = FakeTV("null")
-        bench.restore_accessibility(tv, "com.gathin.tvhome", [OURS])
+        bench.restore_accessibility(tv, "io.github.vesaaa.cleanviddatv", [OURS])
         self.assertEqual(tv.setting, OURS)
 
 
@@ -84,7 +84,7 @@ class ColdStartOrderTest(unittest.TestCase):
         def spy(command, read_timeout_s=None):
             if command.startswith("settings put secure enabled_accessibility_services"):
                 order.append("restore")
-            elif command.startswith("am start -W ") and command.endswith("-n com.gathin.tvhome/.MainActivity"):
+            elif command.startswith("am start -W ") and command.endswith("-n io.github.vesaaa.cleanviddatv/.MainActivity"):
                 order.append("measure")
             return original_shell(command, read_timeout_s)
         tv.shell = spy
@@ -99,7 +99,7 @@ class ColdStartOrderTest(unittest.TestCase):
 
         bench.other_app = lambda _tv: "com.android.tv.settings/.MainSettings"
         try:
-            bench.cold_start(tv, "com.gathin.tvhome/.MainActivity", 1)
+            bench.cold_start(tv, "io.github.vesaaa.cleanviddatv/.MainActivity", 1)
         finally:
             pass
 

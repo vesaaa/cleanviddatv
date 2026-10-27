@@ -99,7 +99,7 @@ class AccessibilityFlagNoteTest(unittest.TestCase):
                 self.assertIn(command, self.note)
 
     def test_bullet_names_the_component_a_reader_will_see(self):
-        self.assertIn("com.gathin.tvhome/com.gathin.tvhome.HomeKeyService", self.note)
+        self.assertIn("io.github.vesaaa.cleanviddatv/io.github.vesaaa.cleanviddatv.HomeKeyService", self.note)
 
     def test_bullet_names_the_device_and_build_it_was_seen_on(self):
         self.assertIn("TCL C6K Pro", self.note)

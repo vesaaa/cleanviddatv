@@ -29,7 +29,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 TOOLS = ROOT / "tools"
-LAUNCHER_PKG = "com.gathin.tvhome"
+LAUNCHER_PKG = "io.github.vesaaa.cleanviddatv"
 
 
 # ---------------------------------------------------------------- reading the repo

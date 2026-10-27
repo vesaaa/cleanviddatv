@@ -9,7 +9,7 @@ import shlex
 import sys
 import time
 
-PACKAGE = "com.gathin.tvhome"
+PACKAGE = "io.github.vesaaa.cleanviddatv"
 SERVICES = "enabled_accessibility_services"
 FLAG = "accessibility_enabled"
 ACTION = "android.accessibilityservice.AccessibilityService"

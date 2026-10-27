@@ -57,7 +57,7 @@ SHORT_NAMES = {"launcherx": "com.google.android.apps.tv.launcherx"}
 # `STOCK_LAUNCHER=<that package>`: the stock launcher named on this line or an earlier one.
 STOCK_ENV_BACK = re.compile(r"STOCK_LAUNCHER\s*=\s*<th(?:at|is) package>")
 # An active line's own trailing comment, e.g. `com.google.android.apps.tv.launcherx  # stock Google TV
-# home; com.gathin.tvhome is Home now`. The phrase has to end the naming: "stock launcher
+# home; io.github.vesaaa.cleanviddatv is Home now`. The phrase has to end the naming: "stock launcher
 # recommendation rows" (com.google.android.tvrecommendations) is not a launcher.
 STOCK_COMMENT = re.compile(
     r"(?i)^\s*stock\s+(?:\S+\s+){0,3}(?:launcher|home)\b\s*(?=$|[;,.()]|\b(?:is|now|at|on|and)\b)")
@@ -243,7 +243,7 @@ class StockLauncherUndoTest(unittest.TestCase):
     def test_an_active_lines_stock_home_comment_counts(self):
         text = (
             "# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/x/debloat.txt\n"
-            "com.google.android.apps.tv.launcherx         # stock Google TV home; com.gathin.tvhome is Home now\n"
+            "com.google.android.apps.tv.launcherx         # stock Google TV home; io.github.vesaaa.cleanviddatv is Home now\n"
         )
         self.assertEqual(1, len(undo_problems(text)))
 

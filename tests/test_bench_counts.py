@@ -38,7 +38,7 @@ from tools import bench
 
 STRACE = (
     "cpu  1000 0 1000 8000 0 0 0 0 0 0\n"
-    "1234 (com.gathin.tvhome) S 1 1234 1234 0 -1 4194560 100 0 0 0 50 60 0 0 20 0 1 0 100 1000 100 "
+    "1234 (io.github.vesaaa.cleanviddatv) S 1 1234 1234 0 -1 4194560 100 0 0 0 50 60 0 0 20 0 1 0 100 1000 100 "
     "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n"
 )
 
@@ -57,10 +57,10 @@ class FakeTV:
         pass
 
     def home_component(self):
-        return "com.gathin.tvhome/.MainActivity"
+        return "io.github.vesaaa.cleanviddatv/.MainActivity"
 
     def package_of(self, component):
-        return "com.gathin.tvhome"
+        return "io.github.vesaaa.cleanviddatv"
 
     def version_of(self, package):
         return "0.4.0"
@@ -69,7 +69,7 @@ class FakeTV:
         return True
 
     def focused_window(self):
-        return "u0 com.gathin.tvhome/.MainActivity"
+        return "u0 io.github.vesaaa.cleanviddatv/.MainActivity"
 
     def shell(self, command):
         self.commands.append(command)
@@ -82,7 +82,7 @@ class FakeTV:
         if command.startswith("am start -W"):
             return "WaitTime: 100\n"
         if "resolve-activity" in command:
-            return "priority=0 com.gathin.tvhome/.MainActivity\n"
+            return "priority=0 io.github.vesaaa.cleanviddatv/.MainActivity\n"
         return ""
 
 
