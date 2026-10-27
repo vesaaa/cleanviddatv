@@ -1,6 +1,6 @@
 name: CI
 
-# Releases only: pushes to main and pull requests run nothing; a version tag (v1.0.0, v1.1.0-beta1...) runs it all.
+# Releases only: pushes to main and pull requests run nothing; a version tag (v1.0.0, v1.0.0-beta.1...) runs it all.
 on:
   push:
     tags: ['v*']
