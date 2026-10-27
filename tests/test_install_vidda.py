@@ -56,6 +56,9 @@ def run(command):
         m = re.match(r"pm grant (\S+) (\S+)( && echo .*)?$", part)
         if m:
             state["granted"].append(m.group(2))
+        m = re.match(r"appops set (\S+) (\S+) allow$", part)
+        if m:
+            state["granted"].append(m.group(2))
     return out
 
 
@@ -140,6 +143,7 @@ class InstallViddaTest(unittest.TestCase):
         self.assertIn("STOCK_LAUNCHER=com.jamdeo.tv.vod HOME_KEY_SERVICE=1 RESTORE_KEY_SERVICES=1", args)
         self.assertEqual(tv["settings"]["enabled_accessibility_services"], PKG + "/.HomeKeyService")
         self.assertIn("android.permission.WRITE_SECURE_SETTINGS", tv["granted"])
+        self.assertIn("MANAGE_EXTERNAL_STORAGE", tv["granted"], "the file picker needs all-files access")
 
     def test_turns_adb_off_at_the_end_unless_kept(self):
         _, tv = self.install()

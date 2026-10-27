@@ -24,6 +24,10 @@
     <!-- YaOS (Yandex TV OS): HDMI, AV and the tuner all play in com.yandex.tv.live, whose activities require
          this permission (protection level normal, so it is granted at install). Ignored on other TVs. -->
     <uses-permission android:name="yandex.tv.permission.ACCESS_TV_SOURCE" />
+    <!-- All-files access, for the file picker (FilePickerActivity, StorageProvider) that stands in for the DocumentsUI
+         this firmware lacks. Never requested at runtime: install-vidda.sh grants it with appops. -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
 
     <!-- Android 11+ package visibility: lets the launcher list the TV apps it shows as tiles, and the
          apps that declare a module card (docs/specs/card.md). -->
@@ -221,6 +225,44 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
+
+        <!-- "Pick a file / folder" for other apps: China-market Hisense / Vidda firmware has no DocumentsUI, so nothing
+             else answers these, and apps such as Lemuroid cannot be pointed at their files. -->
+        <activity
+            android:name=".FilePickerActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.OPEN_DOCUMENT_TREE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.OPEN_DOCUMENT" />
+                <action android:name="android.intent.action.GET_CONTENT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.OPENABLE" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.OPEN_DOCUMENT" />
+                <action android:name="android.intent.action.GET_CONTENT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
+        <!-- The documents FilePickerActivity hands out. Only the system holds MANAGE_DOCUMENTS: apps reach these
+             documents through the URI grants the picker gives them, never by querying the provider themselves. -->
+        <provider
+            android:name=".StorageProvider"
+            android:authorities="${applicationId}.documents"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
 
         <!-- tools/theme.sh writes the theme through this where the shell can't reach Android/data;
              see ThemeProvider. WRITE_SECURE_SETTINGS: the adb shell has it, ordinary apps don't. -->

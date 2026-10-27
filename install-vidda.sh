@@ -75,6 +75,8 @@ fi
 tv "settings put global cleanviddatv_disabled '$NEW'"
 echo "恢复记录：$(printf '%s' "$NEW" | tr ',' '\n' | grep -c .) 个应用"
 tv "pm grant $PKG android.permission.WRITE_SECURE_SETTINGS" && echo "已开通桌面设置里的 ADB 开关和一键恢复"
+# The firmware has no DocumentsUI: CleanViddaTV's own picker answers "pick a file / folder" and needs all-files access.
+tv "appops set $PKG MANAGE_EXTERNAL_STORAGE allow" && echo "已开通文件选择器（其他应用选择文件或文件夹时使用）"
 
 echo "== 6/6 完成"
 echo "请重启一次电视，确认开机直接进入 CleanViddaTV，遥控器主页键正常。"

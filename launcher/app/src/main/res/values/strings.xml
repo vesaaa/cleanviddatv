@@ -172,4 +172,13 @@
     <string name="restore_err_connect">连不上电视本机的 ADB（127.0.0.1:5555）。请确认"维护"里的 ADB 调试可以打开。</string>
     <string name="restore_err_permission">没有修改系统设置的权限，请重新运行 install-vidda.sh。</string>
     <string name="restore_err_adb">ADB 出错：%1$s</string>
+    <!-- File picker (FilePickerActivity): answers apps that ask to pick a file or a folder. -->
+    <string name="files_pick_folder">选择文件夹</string>
+    <string name="files_pick_file">选择文件</string>
+    <string name="files_storage">存储设备</string>
+    <string name="files_internal">内部存储</string>
+    <string name="files_use_folder">使用此文件夹</string>
+    <string name="files_empty">这个文件夹是空的</string>
+    <string name="files_free">可用 %1$s</string>
+    <string name="files_no_access">CleanViddaTV 还没有「访问所有文件」权限，无法浏览存储。请重新运行 install-vidda.sh，或在电脑上执行：adb shell appops set io.github.vesaaa.cleanviddatv MANAGE_EXTERNAL_STORAGE allow</string>
 </resources>
