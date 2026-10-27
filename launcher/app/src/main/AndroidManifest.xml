@@ -102,6 +102,24 @@
             </intent-filter>
         </activity>
 
+        <!-- Home before the user is unlocked at boot (BootHomeActivity): MainActivity is not direct-boot aware, and
+             with the stock launcher disabled a Hisense / Vidda set otherwise never finishes booting. -->
+        <activity
+            android:name=".BootHomeActivity"
+            android:exported="true"
+            android:directBootAware="true"
+            android:launchMode="singleTask"
+            android:stateNotNeeded="true"
+            android:excludeFromRecents="true"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            <intent-filter android:priority="-999">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".LauncherSettingsActivity"
             android:exported="false"
