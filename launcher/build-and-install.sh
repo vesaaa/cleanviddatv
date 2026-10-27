@@ -21,6 +21,13 @@ if [ -n "$MIN_SDK" ] && [ -n "$TV_SDK" ] && [ "$TV_SDK" -lt "$MIN_SDK" ]; then
   echo "half would need your own build with a lower minSdk (docs/TROUBLESHOOTING.md)." >&2
   exit 1
 fi
+APK=app/build/outputs/apk/release/app-release.apk
+# APK_FILE=<path>: install a prebuilt release APK (from the project's releases) instead of building one, so a
+# computer without a JDK and the Android SDK can install too.
+if [ -n "${APK_FILE:-}" ]; then
+  [ -f "$APK_FILE" ] || { echo "ERROR: APK_FILE=$APK_FILE does not exist." >&2; exit 1; }
+  APK=$APK_FILE
+else
 # macOS: java_home or Homebrew; Linux: the java on PATH.
 # `/usr/libexec/java_home -v 17` means "17 or newer", so on a Mac whose only JDK is newer it prints
 # that one and exits 0, and the Homebrew fallback below never runs. Gradle 8.9 then stops with
@@ -51,6 +58,7 @@ export PATH="$JAVA_HOME/bin:$PATH"
 # on it too. Forward slashes work everywhere.
 [ -f local.properties ] || echo "sdk.dir=$(printf '%s' "$ANDROID_HOME" | tr '\\' '/')" > local.properties
 ./gradlew assembleRelease -q --console=plain
+fi
 # Which app owns Home differs by build (com.google.android.tvlauncher on Android TV,
 # com.google.android.apps.tv.launcherx on newer Google TV), so ask the TV instead of guessing.
 # Only a launcher we recognise is accepted: the answer can also be Android's chooser ("android"),
@@ -96,7 +104,6 @@ echo "Stock launcher: $STOCK_LAUNCHER"
 HOME_QUERY='cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME'
 if [ "$STOCK_LAUNCHER" = none ]; then DISABLE_STOCK="echo stock launcher left alone"
 else DISABLE_STOCK="pm disable-user --user 0 $STOCK_LAUNCHER"; fi
-APK=app/build/outputs/apk/release/app-release.apk
 "$PY" -I ../tools/b64push.py "$APK" /data/local/tmp/tvhome.apk
 # Install on its own: in the batch below a failed install (e.g. "not enough space" on a full /data)
 # would not stop the stock launcher from being disabled.
