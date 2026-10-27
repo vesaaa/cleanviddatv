@@ -29,6 +29,9 @@ public class GlassView extends View {
     /** glass_style rim or halo: no sheen and no fill, only the crisp rim (and, for halo, a lighter outer glow). */
     private boolean flat;
     private boolean halo;
+    /** glass_style lift (tvOS): no rim and no glow, only a light sheen falling across the tile from its top left. */
+    private boolean lift;
+    private final Paint sheen = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     public GlassView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -65,6 +68,7 @@ public class GlassView extends View {
     void setStyle(String style) {
         flat = Config.GLASS_RIM.equals(style) || Config.GLASS_HALO.equals(style);
         halo = Config.GLASS_HALO.equals(style);
+        lift = Config.GLASS_LIFT.equals(style);
         rim.setStrokeWidth((flat ? 2f : 1.5f) * density);
         invalidate();
     }
@@ -79,12 +83,23 @@ public class GlassView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         fill.setShader(new LinearGradient(0, 0, 0, h, 0x3DFFFFFF, 0x12FFFFFF, Shader.TileMode.CLAMP));
         specular.setShader(new LinearGradient(0, 0, 0, h * 0.45f, 0x66FFFFFF, 0x00FFFFFF, Shader.TileMode.CLAMP));
+        sheen.setShader(new LinearGradient(0, 0, w * 0.6f, h, new int[]{0x38FFFFFF, 0x0DFFFFFF, 0x00FFFFFF},
+                new float[]{0f, 0.45f, 1f}, Shader.TileMode.CLAMP));
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         float inset = 6f * density;   // room for the glow
         rect.set(inset, inset, getWidth() - inset, getHeight() - inset);
+        if (lift) {
+            // The tile's own elevation shadow does the lifting; the slab only catches the light, with a hairline edge.
+            canvas.drawRoundRect(rect, radius, radius, sheen);
+            int saved = rim.getColor();
+            rim.setColor(0x26FFFFFF);
+            canvas.drawRoundRect(rect, radius, radius, rim);
+            rim.setColor(saved);
+            return;
+        }
 
         // Outer glow: thin rings across the inset, each a little fainter, so it fades out smoothly. Three wide
         // strokes left visible bands once the glow took an app's colour at a stronger alpha. The hardware layer

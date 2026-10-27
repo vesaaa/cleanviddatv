@@ -4,6 +4,9 @@
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:colorBackground">@android:color/black</item>
         <item name="android:windowAnimationStyle">@null</item>
+        <!-- Darker shadows than the platform's faint default, so a tile lifted by glass_style lift reads on dark Home. -->
+        <item name="android:ambientShadowAlpha">0.2</item>
+        <item name="android:spotShadowAlpha">0.55</item>
     </style>
 
     <!-- Frosted pill, tvOS style. -->

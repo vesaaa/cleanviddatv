@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -33,7 +34,6 @@ import java.util.concurrent.Executors;
 final class WallpaperPlayer {
     private final FrameLayout root;
     private final ImageView image;
-    private final int backgroundColor;
     private final List<File> files;
     private final long interval;
     private final String order;
@@ -62,9 +62,12 @@ final class WallpaperPlayer {
     private LocalDate sunDay;
     private int[] sun;
 
+    /** What the root drew before a picture covered it (the colour, or the soft backdrop), put back when it is dropped. */
+    private final Drawable fallback;
+
     WallpaperPlayer(Context context, FrameLayout root, Config config) {
         this.root = root;
-        backgroundColor = config.backgroundColor;
+        fallback = root.getBackground();
         files = new ArrayList<>(config.wallpapers);
         interval = config.wallpaperRotationMinutes * 60_000L;
         bitmapConfig = config.wallpaperTrueColor ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
@@ -145,7 +148,7 @@ final class WallpaperPlayer {
         // let Android reclaim its native buffer after rendering releases it instead of recycling it mid-frame.
         current = null;
         displayed = "";
-        root.setBackgroundColor(backgroundColor);
+        root.setBackground(fallback);
     }
 
     /** The pictures the rotation picks from now: wallpaper_moods' group for the time of day, or the whole collection. */
