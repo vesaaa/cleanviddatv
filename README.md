@@ -16,7 +16,8 @@ CleanViddaTV 在此基础上做的事：只针对国行海信 / Vidda、开机�
 
 | 机型 | 系统 | 状态 |
 |---|---|---|
-| Vidda 电视（`VIDAA_TV`，MediaTek MT9653） | Android 11，聚好看 JuUI | 清单经 CleanYourTV 社区实测；CleanViddaTV 的开机与恢复流程**待实机验证** |
+| 海信 65V1N-X（`VIDAA_TV`，MediaTek MT9653，固件 02.02.70.01） | Android 11，聚好看 JuUI | **实机验证**：安装、开机直接进桌面、冷启动、Home 键、信号源切 HDMI、一键恢复、在线更新、文件选择器 |
+| 其他 Vidda 电视（`VIDAA_TV`，MediaTek MT9653） | Android 11，聚好看 JuUI | 同一平台；清单经 CleanYourTV 社区实测 |
 | 海信 65D62QH（同平台） | Android 11 | 同上 |
 | 海信 E5Q Pro（同平台） | Android 11 | 同上 |
 
@@ -24,6 +25,10 @@ CleanViddaTV 在此基础上做的事：只针对国行海信 / Vidda、开机�
 
 ## 装完之后
 
+- **仿 tvOS 的桌面**：一行 5 个应用卡片浮在壁纸上，选中的卡片放大、抬起并带投影；顶部显示选中应用的名字。时钟、日期、信号源、网络和设置在顶栏。
+- **内置壁纸**：6 张风景照每小时轮换，也可以换成抽象光影或固定一张（设置 → 壁纸）。
+- **文件选择器**：这一代海信系统里根本没有"选择文件"界面，很多应用（比如 Lemuroid 选择游戏文件夹）点了没反应。CleanViddaTV 补上了它：其他应用要选文件或文件夹时，会弹出一个用遥控器操作的选择界面，能浏览内部存储和 U 盘。
+- **在线更新**：设置 → 更新 → 检查更新，先从国内 CDN 下载，连不上再走 GitHub；校验签名后由系统安装器确认安装，设置和布局都保留。桌面每天也会自己检查一次，有新版本时"设置"按钮上会出现小红点。
 - **开机直接进 CleanViddaTV**。系统还在启动时先显示黑屏过渡，解锁后立刻进入新桌面。
 - **遥控器 Home 键**回到 CleanViddaTV（这台电视的 Home 键是扫描码 102，原本交给聚好看处理）。
 - **信号源**：桌面上的"信号源"按钮打开海信自己的信号源面板，可以切换 HDMI。
@@ -36,8 +41,20 @@ CleanViddaTV 在此基础上做的事：只针对国行海信 / Vidda、开机�
 
 需要一台和电视在同一局域网的电脑（Linux、macOS，或 Windows 的 Git Bash），以及 Python 3。
 
-1. **打开电视的 ADB**。国行海信 / Vidda 的开发者选项藏在工厂菜单后面，步骤见 [`examples/hisense-e5q-pro/README.md`](examples/hisense-e5q-pro/README.md)（需要一个 USB 鼠标）。打开"USB 调试"后，5555 端口的网络 ADB 也会一起打开。
-2. **在电脑上运行**：
+### 第一步：提前打开电视的 ADB
+
+安装要通过 ADB（电视的调试接口）完成，**请先把它打开**。打开"USB 调试"后，5555 端口的网络 ADB 也会一起打开，不需要配对，也不会弹出确认。两种方法：
+
+- **按电视自己的菜单打开**：国行海信 / Vidda 的开发者选项藏在工厂菜单后面，步骤见 [`examples/hisense-e5q-pro/README.md`](examples/hisense-e5q-pro/README.md)（需要一个 USB 鼠标）。
+- **让 AI 助手带着你开**：把电视型号（设置 → 关于）和设置界面的照片发给 Claude 这类 AI 助手，让它一步步告诉你按哪里。不同固件的菜单位置不一样，AI 看着截图更容易找对。
+
+> ⚠️ 网上有一些号称"一键开启 ADB"的 APK，往往冒用华为、谷歌等厂商的包名，用公开的测试密钥签名，并申请大量系统权限。它们能完全控制电视，来源和代码都无法核实，**本项目不提供、也不推荐**。
+
+装好以后就不再需要电脑了：以后要用 ADB，在 CleanViddaTV 的设置 → 维护里打开（30 分钟后自动关闭）。
+
+### 第二步：在电脑上运行安装脚本
+
+1. **运行**：
 
    ```bash
    git clone https://github.com/vesaaa/cleanviddatv
@@ -46,11 +63,15 @@ CleanViddaTV 在此基础上做的事：只针对国行海信 / Vidda、开机�
    TV_HOST=<电视的 IP> ./install-vidda.sh
    ```
 
-   默认会在本机用 Gradle 构建桌面（需要 JDK 17 和 Android SDK）。不想装开发环境的话，下载发布页里的 APK，用 `APK_FILE=CleanViddaTV.apk TV_HOST=<电视的 IP> ./install-vidda.sh`。
+   默认会在本机用 Gradle 构建桌面（需要 JDK 17 和 Android SDK）。不想装开发环境的话，从 [发布页](https://github.com/vesaaa/cleanviddatv/releases/latest) 下载 `CleanViddaTV-<版本>.apk`，用 `APK_FILE=CleanViddaTV-<版本>.apk TV_HOST=<电视的 IP> ./install-vidda.sh`。发布页的 APK 都用同一把正式密钥签名，以后可以直接在线更新。
 
-3. **重启一次电视**，确认开机直接进入 CleanViddaTV、Home 键正常。
+2. **重启一次电视**，确认开机直接进入 CleanViddaTV、Home 键正常。
 
-安装脚本会依次：检查型号 → 记录当前状态 → 按清单停用（先备份，并有防止"没有桌面可用"的保护）→ 安装并启动新桌面，确认它成为默认桌面后才停用聚好看 → 把恢复所需的记录写到电视上 → **关闭 ADB**。以后需要 ADB 时，在桌面设置里打开。
+安装脚本会依次：检查型号 → 记录当前状态 → 按清单停用（先备份，并有防止"没有桌面可用"的保护）→ 安装并启动新桌面，确认它成为默认桌面后才停用聚好看 → 开通遥控器按键服务、文件选择器和在线更新所需的权限 → 把恢复所需的记录写到电视上 → **关闭 ADB**。以后需要 ADB 时，在桌面设置里打开。
+
+## 更新
+
+装好以后不用再碰电脑：设置 → 更新 → **检查更新**。也可以打开 **接收测试版**，提前用上 beta 版本。
 
 ## 恢复原厂桌面
 
@@ -92,4 +113,4 @@ CleanViddaTV 在此基础上做的事：只针对国行海信 / Vidda、开机�
 
 ## 协议
 
-MIT，见 [`LICENSE`](LICENSE)：保留 CleanYourTV 原作者的版权声明，并加上本项目的。桌面使用的 Outfit 字体为 SIL Open Font License 1.1，见 [`launcher/FONT-LICENSE-OFL.txt`](launcher/FONT-LICENSE-OFL.txt)。
+MIT，见 [`LICENSE`](LICENSE)：保留 CleanYourTV 原作者的版权声明，并加上本项目的。桌面使用的 Outfit 字体为 SIL Open Font License 1.1，见 [`launcher/FONT-LICENSE-OFL.txt`](launcher/FONT-LICENSE-OFL.txt)。内置的风景照来自 Wikimedia Commons，按各自作者的 CC BY-SA / CC BY 许可分发，作者和许可见 [`launcher/app/src/main/assets/wallpapers/CREDITS.md`](launcher/app/src/main/assets/wallpapers/CREDITS.md)，电视上在设置 → 壁纸 → 图片来源与授权里也能看到。
