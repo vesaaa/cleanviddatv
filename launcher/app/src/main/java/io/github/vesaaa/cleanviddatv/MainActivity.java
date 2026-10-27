@@ -385,6 +385,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private java.util.Map<Integer, String> homeAppKeys = java.util.Collections.emptyMap();
 
+    /** This Home's answer to BuiltinWallpapers.onCopied, so a later Home's is not cleared by this one's onDestroy. */
+    private Runnable wallpapersCopied;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -393,6 +396,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // The ADB switch in the launcher's settings: ADB it turned on goes off after a reboot (HomeKeyService does
         // the same at boot; this covers a TV where that helper is off).
         ViddaTools.adbOffAfterReboot(this);
+        // A first install copies the bundled wallpapers in the background (BuiltinWallpapers.all): show them once there.
+        wallpapersCopied = () -> {
+            if (!isFinishing() && !isDestroyed()) recreate();
+        };
+        BuiltinWallpapers.onCopied = wallpapersCopied;
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
         Config cfg = Config.load(this);
         homeAppKeys = RemoteKeys.parseAppKeys(cfg.appKeys);
@@ -1242,6 +1250,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (BuiltinWallpapers.onCopied == wallpapersCopied) BuiltinWallpapers.onCopied = null;
         unregisterReceiver(packageReceiver);
         wallpaperPlayer.close();
         ConnectivityManager cm = getSystemService(ConnectivityManager.class);

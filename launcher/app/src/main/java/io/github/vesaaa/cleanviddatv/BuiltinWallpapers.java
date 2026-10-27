@@ -2,6 +2,8 @@ package io.github.vesaaa.cleanviddatv;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.Handler;
+import android.os.Looper;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,9 +12,9 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The wallpapers that ship in the APK (assets/wallpapers): six landscape photos and three fields of soft light.
@@ -36,20 +38,51 @@ final class BuiltinWallpapers {
         return new File(ctx.getNoBackupFilesDir(), "builtin_wallpapers");
     }
 
-    /** Every bundled picture, sorted by name; empty when they could not be copied. */
+    /** Set by Home: called on the main thread when a copy finished that the pictures Home has did not cover yet. */
+    static volatile Runnable onCopied;
+    private static final AtomicBoolean copying = new AtomicBoolean();
+
+    /**
+     * Every bundled picture there is on disk now, sorted by name. Never copies on the caller's thread: Config.load runs
+     * on the main thread while Home starts, so a first install or an update copies in the background and Home gets the
+     * pictures already on disk (none on a first install, the previous version's after an update) until onCopied.
+     */
     static List<File> all(Context ctx) {
         File dir = dir(ctx);
+        List<File> now = WallpaperRotation.images(dir);
+        String stamp;
         try {
-            String stamp = String.valueOf(ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0).lastUpdateTime);
-            File marker = new File(dir, ".installed");
-            if (!marker.isFile() || !stamp.equals(new String(Files.readAllBytes(marker.toPath()), StandardCharsets.UTF_8))) {
-                copy(ctx.getAssets(), dir);
-                Files.write(marker.toPath(), stamp.getBytes(StandardCharsets.UTF_8));
-            }
+            stamp = String.valueOf(ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0).lastUpdateTime);
         } catch (Exception e) {
-            return Collections.emptyList();
+            return now;
         }
-        return WallpaperRotation.images(dir);
+        if (!stamp.equals(readMarker(dir)) && copying.compareAndSet(false, true)) {
+            Context app = ctx.getApplicationContext();
+            boolean wasEmpty = now.isEmpty();
+            new Thread(() -> {
+                try {
+                    copy(app.getAssets(), dir);
+                    Files.write(new File(dir, MARKER).toPath(), stamp.getBytes(StandardCharsets.UTF_8));
+                    Runnable done = onCopied;
+                    if (wasEmpty && done != null) new Handler(Looper.getMainLooper()).post(done);
+                } catch (Exception ignored) {
+                    // Retried at the next start; Home keeps the soft backdrop meanwhile.
+                } finally {
+                    copying.set(false);
+                }
+            }, "builtin-wallpapers").start();
+        }
+        return now;
+    }
+
+    private static final String MARKER = ".installed";
+
+    private static String readMarker(File dir) {
+        try {
+            return new String(Files.readAllBytes(new File(dir, MARKER).toPath()), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     private static void copy(AssetManager assets, File dir) throws Exception {
