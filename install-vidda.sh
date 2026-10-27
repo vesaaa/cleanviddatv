@@ -24,8 +24,9 @@ PY=tools/venv/bin/python
 export MSYS_NO_PATHCONV=1
 LIST="${LIST:-examples/vidda-mt9653/debloat.txt}"
 PKG=io.github.vesaaa.cleanviddatv
-STOCK=com.jamdeo.tv.vod
-STOCK_HOME=com.jamdeo.tv.vod/com.ju.main.launcher.LauncherActivity
+# The stock launcher (聚好看); overridable only to rehearse the flow on another Android 11 set or an emulator.
+STOCK="${STOCK_PKG:-com.jamdeo.tv.vod}"
+STOCK_HOME="${STOCK_HOME_COMPONENT:-com.jamdeo.tv.vod/com.ju.main.launcher.LauncherActivity}"
 if [ -n "${APK_FILE:-}" ]; then APK_FILE="$(cd "$(dirname "$APK_FILE")" && pwd)/$(basename "$APK_FILE")"; export APK_FILE; fi
 
 tv() { "$PY" -I tools/tv.py "$@" | tr -d '\r'; }
