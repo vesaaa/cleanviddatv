@@ -29,12 +29,19 @@
 
     <!-- Apps never shown as tiles (e.g. the Live TV app, which the Inputs menu already covers). -->
     <string-array name="hidden_apps">
-        <item>com.mediatek.wwtv.tvcenter</item>
-        <item>com.mitv.gallery</item>
+        <!-- Hisense / Vidda (JuUI): the stock homes, Live TV and the source panel are reached from the Inputs pill;
+             the mirror receiver is kept for casting but has no use as a tile. -->
+        <item>com.jamdeo.tv.vod</item>
+        <item>com.jamdeo.tv.livetv</item>
+        <item>com.hisense.tv.inputs</item>
+        <item>com.keylab.speech.view.vidaa</item>
+        <item>com.hisense.tv.globalui</item>
+        <item>com.hisense.uifac</item>
+        <item>com.hisense.tv.mirror</item>
     </string-array>
 
     <!-- The TV's Live TV / tuner app, offered at the end of the Inputs menu. Leave empty to omit. -->
-    <string name="live_tv_package" translatable="false">com.mediatek.wwtv.tvcenter</string>
+    <string name="live_tv_package" translatable="false">com.jamdeo.tv.livetv</string>
 
     <!-- Open the Live TV app above the first time Home comes up after the TV is switched on, for sets that are
          mostly used for broadcast TV. Once per boot: Home after that stays Home. Can also be set with
@@ -80,8 +87,10 @@
          offers one row that starts this service: component first, then action. The component can also be an
          activity, for sets whose panel is a dialog (BYINTEK U4). With no Live TV app either, the Inputs pill
          opens the panel directly instead of a menu. Leave empty to omit. -->
-    <string name="source_panel_service" translatable="false"></string>
-    <string name="source_panel_action" translatable="false"></string>
+    <!-- Hisense / Vidda MT9653: no TvInputManager inputs; this vendor panel switches HDMI itself (keep
+         com.hisense.tv.tiletransition enabled, the panel binds to it). -->
+    <string name="source_panel_service" translatable="false">com.hisense.tv.inputs/com.hisense.tv.InputsUIService</string>
+    <string name="source_panel_action" translatable="false">com.hisense.tv.start_inputs</string>
     <!-- One int extra sent with the source panel intent, "name=value". Coocaa OS (Skyworth, China) needs
          control_center_command=100 for its control center to open on the source row, as the remote's
          Source button does. Leave empty to omit. -->
@@ -138,6 +147,13 @@
          nothing is no proof the press never arrived. Leave empty to omit. -->
     <integer-array name="settings_key_scancodes">
     </integer-array>
+    <!-- Remote buttons that open this launcher, by scancode (HomeKeyService). Hisense / Vidda: the Home button is
+         scancode 102, which the keylayout maps to KEYCODE_F12 for the vendor's SysUIMerge, whose answer is "back to
+         the stock launcher"; with that launcher disabled the button did nothing. Android's own Home action is no
+         better there: the firmware starts its launcher by component name. -->
+    <integer-array name="home_key_scancodes">
+        <item>102</item>
+    </integer-array>
     <!-- The same by Android keycode, for buttons whose scancode is shared. TCL Google TV remotes send their
          Settings button as keycode 83 (KEYCODE_NOTIFICATION, which the stock Google TV home turned into its quick
          settings panel) on scancode 240 (KEY_UNKNOWN), the scancode several TCL buttons share. Find the keycode
@@ -156,7 +172,7 @@
          off the enabled list. true: Home puts the helpers that were running back when it starts; one turned off in
          Settings stays off. Needs WRITE_SECURE_SETTINGS, which build-and-install grants with RESTORE_KEY_SERVICES=1
          (-RestoreKeyServices on Windows). Can also be set with "restore_key_services": true in a theme's config.json. -->
-    <bool name="restore_key_services">false</bool>
+    <bool name="restore_key_services">true</bool>
 
     <!-- More remote buttons that open the input switcher, by Android keycode (INPUT_KEY_SERVICE=1
          build-and-install.sh; KEYCODE_TV always does). For buttons only a disabled app answered: the Xiaomi
@@ -215,7 +231,9 @@
     <!-- Home at every power-on, whatever the firmware put in front (the last HDMI input, Live TV or an app),
          for TVs that come back to the last source, like Philips. Needs HOME_KEY_SERVICE=1; a key pressed first
          wins. Ignored with boot_to_live_tv or an Open on start app. Can also be set with "power_on_home_always". -->
-    <bool name="power_on_home_always">false</bool>
+    <!-- Hisense / Vidda: the firmware starts its own launcher by component name at boot and never asks Android for
+         Home, so with that launcher disabled the screen stays empty; HomeKeyService brings this launcher up instead. -->
+    <bool name="power_on_home_always">true</bool>
 
     <!-- Every press of the remote's Home button opens this launcher, a held one too. Android turns a Home press held
          past the long-press timeout (400 ms) into its long-press action; on Android TV that is ALL_APPS, sent to the
@@ -371,7 +389,7 @@
     <bool name="show_home_settings_shortcut">false</bool>
 
     <!-- Installed launchable apps, including ordinary Android apps. Also settable in config.json. -->
-    <bool name="app_library">false</bool>
+    <bool name="app_library">true</bool>
     <!-- Every app tile is its icon on a card tinted from that icon, name only under the focused tile,
          instead of each app's own banner. Off by default; a theme can set "uniform_tiles": true. -->
     <bool name="uniform_tiles">false</bool>

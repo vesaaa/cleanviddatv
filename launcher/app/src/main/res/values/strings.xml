@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Home</string>
+    <string name="app_name">CleanViddaTV</string>
     <string name="inputs">Inputs</string>
     <string name="wifi">Wi-Fi</string>
     <string name="settings">Settings</string>
@@ -152,4 +152,22 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Last opened %1$s</string>
+    <!-- CleanViddaTV: ADB switch and restore (ViddaTools). -->
+    <string name="vidda_tools_label">Maintenance</string>
+    <string name="adb_state">ADB debugging: %1$s</string>
+    <string name="adb_state_on">ADB debugging: on (%1$s:5555)</string>
+    <string name="adb_warning_title">Turn on ADB debugging?</string>
+    <string name="adb_warning">While it is on, any device on your network can control this TV, with no prompt on screen. Use it only on a home network you trust, for troubleshooting. It turns itself off after 30 minutes and at the next restart.</string>
+    <string name="adb_unavailable">This switch was not set up at install time. Run install-vidda.sh again, or turn on USB debugging in the TV\'s developer options.</string>
+    <string name="restore_stock">Restore the original home screen…</string>
+    <string name="restore_title">Restore the original home screen?</string>
+    <string name="restore_message">Everything the installer turned off comes back: the stock home screen, the voice assistant and the apps it disabled. Your apps and settings stay. ADB is turned on briefly while this runs.</string>
+    <string name="restore_confirm">Restore</string>
+    <string name="restore_running">Restoring… this takes a few seconds.</string>
+    <string name="restore_done_title">Original home screen restored</string>
+    <string name="restore_done">Press the remote\'s Home button to go back to it. A restart is recommended. You can also uninstall CleanViddaTV now.</string>
+    <string name="restore_uninstall">Uninstall CleanViddaTV</string>
+    <string name="restore_later">Later</string>
+    <string name="restore_failed">Restore did not finish: %1$s\nFrom a computer: tools/restore.sh with the same list.</string>
+    <string name="restore_unavailable">Nothing to restore: this TV was not set up with install-vidda.sh.</string>
 </resources>

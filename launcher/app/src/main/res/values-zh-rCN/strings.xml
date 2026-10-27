@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">主屏幕</string>
+    <string name="app_name">CleanViddaTV</string>
     <string name="inputs">输入源</string>
     <string name="wifi">无线网络</string>
     <string name="settings">设置</string>
@@ -146,4 +146,22 @@
     <string name="tile_add_to_dock">添加到程序坞</string>
     <string name="tile_move">移动</string>
     <string name="tile_replace_in_dock">替换为其他应用</string>
+    <!-- CleanViddaTV: ADB switch and restore (ViddaTools). -->
+    <string name="vidda_tools_label">维护</string>
+    <string name="adb_state">ADB 调试：%1$s</string>
+    <string name="adb_state_on">ADB 调试：开（%1$s:5555）</string>
+    <string name="adb_warning_title">打开 ADB 调试？</string>
+    <string name="adb_warning">打开期间，同一网络里的任何设备都能直接控制这台电视，电视上不会有确认提示。只在可信的家庭网络里、需要排查问题时打开。30 分钟后或电视重启后会自动关闭。</string>
+    <string name="adb_unavailable">安装时没有开通这个开关。请重新运行 install-vidda.sh，或在电视的开发者选项里打开 USB 调试。</string>
+    <string name="restore_stock">恢复原厂桌面…</string>
+    <string name="restore_title">恢复原厂桌面？</string>
+    <string name="restore_message">安装时停用的内容都会恢复：原厂桌面（聚好看）、语音助手，以及被停用的应用。你装的应用和设置都会保留。恢复过程中会临时打开 ADB。</string>
+    <string name="restore_confirm">恢复</string>
+    <string name="restore_running">正在恢复，需要几秒钟……</string>
+    <string name="restore_done_title">已恢复原厂桌面</string>
+    <string name="restore_done">按遥控器的主页键即可回到原厂桌面，建议重启一次电视。也可以现在卸载 CleanViddaTV。</string>
+    <string name="restore_uninstall">卸载 CleanViddaTV</string>
+    <string name="restore_later">稍后</string>
+    <string name="restore_failed">恢复没有完成：%1$s\n也可以用电脑运行 tools/restore.sh，传入同一份清单。</string>
+    <string name="restore_unavailable">没有可恢复的内容：这台电视不是用 install-vidda.sh 安装的。</string>
 </resources>
