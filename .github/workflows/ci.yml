@@ -21,6 +21,8 @@ jobs:
         run: |
           python3 -m venv tools/venv
           tools/venv/bin/pip install -q -r tools/requirements.txt
+      - name: Online wallpaper index is current
+        run: python3 tools/wallpapers.py --check
       - name: Lists, install-vidda.sh and tools
         # The venv interpreter, not the runner's python3: the runner has no adb_shell, so
         # running the suite with it leaves test_tv_reboot to its child-rerun workaround
@@ -161,3 +163,22 @@ jobs:
             aws s3 cp manifest.json "s3://$R2_BUCKET/cleanviddatv/$name" --endpoint-url "$endpoint" \
               --content-type "application/json; charset=utf-8" --cache-control "max-age=300"
           done
+      - name: Wallpapers to the CDN
+        # The launcher's wallpaper gallery reads cleanviddatv/wallpapers/ from the CDN first (then jsDelivr, then GitHub).
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          if [ -z "$R2_ACCOUNT_ID" ] || [ -z "$R2_ACCESS_KEY_ID" ] || [ -z "$R2_SECRET_ACCESS_KEY" ] || [ -z "$R2_BUCKET" ]; then
+            echo "::warning::R2 secrets missing: wallpapers are served from jsDelivr / GitHub only"
+            exit 0
+          fi
+          export AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" AWS_DEFAULT_REGION=auto
+          endpoint="${R2_ENDPOINT:-https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com}"
+          aws s3 sync wallpapers/files "s3://$R2_BUCKET/cleanviddatv/wallpapers/files" --endpoint-url "$endpoint" --content-type image/webp
+          aws s3 sync wallpapers/thumbs "s3://$R2_BUCKET/cleanviddatv/wallpapers/thumbs" --endpoint-url "$endpoint" --content-type image/webp
+          aws s3 cp wallpapers/index.json "s3://$R2_BUCKET/cleanviddatv/wallpapers/index.json" --endpoint-url "$endpoint" \
+            --content-type "application/json; charset=utf-8" --cache-control "max-age=300"

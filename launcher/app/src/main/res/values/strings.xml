@@ -199,4 +199,21 @@
     <string name="update_err_signature">下载的安装包签名与当前版本不同，已拒绝安装</string>
     <string name="update_err_install">安装失败：%1$s</string>
     <string name="update_err_no_installer">电视上找不到系统安装器</string>
+    <!-- Wallpaper gallery (WallpaperGalleryActivity). -->
+    <string name="wallpaper_in_use">使用中</string>
+    <string name="wallpaper_section_rotate">轮换</string>
+    <string name="wallpaper_section_builtin">内置</string>
+    <string name="wallpaper_section_downloaded">已下载（长按删除）</string>
+    <string name="wallpaper_section_online">在线壁纸</string>
+    <string name="wallpaper_section_online_loading">在线壁纸（正在加载…）</string>
+    <string name="wallpaper_section_online_failed">在线壁纸（连不上：CDN、jsDelivr、GitHub 都试过了）</string>
+    <string name="wallpaper_section_online_done">在线壁纸（已全部下载）</string>
+    <string name="wallpaper_section_more">其他</string>
+    <string name="wallpaper_downloaded_rotate">已下载（每小时轮换）</string>
+    <string name="wallpaper_download_hint">按确认键下载</string>
+    <string name="wallpaper_downloading">下载中 %1$d%%</string>
+    <string name="wallpaper_download_failed">下载失败：%1$s</string>
+    <string name="wallpaper_delete_title">删除这张壁纸？</string>
+    <string name="wallpaper_delete">删除</string>
+    <string name="wallpaper_online_credits">在线壁纸来自 CleanViddaTV 仓库的 wallpapers 文件夹，风景照来自 Wikimedia Commons，按各自作者的许可分发。</string>
 </resources>

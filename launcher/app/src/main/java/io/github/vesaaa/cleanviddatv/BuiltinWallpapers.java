@@ -112,19 +112,20 @@ final class BuiltinWallpapers {
         return out;
     }
 
-    /** Whether every picture is a bundled one, so the bundled defaults (rotation, shade) apply. */
+    /** Whether every picture is a bundled or a downloaded one, so the bundled defaults (rotation, shade) apply. */
     static boolean only(List<File> files, Context ctx) {
         if (files.isEmpty()) return false;
-        File dir = dir(ctx);
-        for (File f : files) if (!dir.equals(f.getParentFile())) return false;
+        File dir = dir(ctx), downloads = OnlineWallpapers.dir(ctx);
+        for (File f : files) if (!dir.equals(f.getParentFile()) && !downloads.equals(f.getParentFile())) return false;
         return true;
     }
 
-    /** A short name for the picker: a photo's place without its credit, the whole caption for the rest. */
+    /** A short name for the picker: a photo's title without its credit (bundled or downloaded), the whole caption for the rest. */
     static String label(Map<String, String> captions, File file) {
         String caption = captions.get(file.getName());
         if (caption == null) return file.getName();
         int credit = caption.indexOf(" · ");
-        return credit < 0 || !file.getName().startsWith("builtin-photo-") ? caption : caption.substring(0, credit);
+        boolean photo = file.getName().startsWith("builtin-photo-") || file.getName().startsWith(OnlineWallpapers.PREFIX);
+        return credit < 0 || !photo ? caption : caption.substring(0, credit);
     }
 }

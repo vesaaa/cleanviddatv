@@ -153,7 +153,7 @@ final class Updater {
         }
     }
 
-    private static HttpURLConnection open(String url) throws IOException {
+    static HttpURLConnection open(String url) throws IOException {
         if (!url.startsWith("https://")) throw new IOException("not https: " + url);
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(8000);
@@ -168,7 +168,7 @@ final class Updater {
         return c;
     }
 
-    private static String fetchText(String url) throws IOException {
+    static String fetchText(String url) throws IOException {
         HttpURLConnection c = open(url);
         try (InputStream in = c.getInputStream(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             copy(in, out, -1, null);
@@ -179,7 +179,7 @@ final class Updater {
         }
     }
 
-    private static void fetchFile(String url, File target, Progress progress) throws IOException {
+    static void fetchFile(String url, File target, Progress progress) throws IOException {
         HttpURLConnection c = open(url);
         try (InputStream in = c.getInputStream(); OutputStream out = new FileOutputStream(target)) {
             copy(in, out, c.getContentLengthLong(), progress);
@@ -202,7 +202,7 @@ final class Updater {
         }
     }
 
-    private static String sha256(File f) throws IOException {
+    static String sha256(File f) throws IOException {
         try (InputStream in = new FileInputStream(f)) {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] buffer = new byte[64 * 1024];

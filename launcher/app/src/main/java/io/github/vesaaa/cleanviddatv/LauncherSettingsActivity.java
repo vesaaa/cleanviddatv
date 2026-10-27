@@ -183,76 +183,16 @@ public final class LauncherSettingsActivity extends Activity {
         for (int i = views.length - 1; i >= 0; i--) row.addView(views[i]);
     }
 
-    private void showWallpaperPicker() {
-        File dir = Config.dir(this);
-        List<File> images = new java.util.ArrayList<>(WallpaperRotation.images(
-                dir == null ? null : new File(dir, "wallpapers")));
-        // A theme with a single wallpaper.jpg offers that picture too (Config maps the choice back to it).
-        File single = dir == null ? null : new File(dir, Config.WALLPAPER_NAME);
-        if (single != null && single.isFile()) images.add(0, single);
-        List<File> builtins = BuiltinWallpapers.all(this);
-        Map<String, String> captions = WallpaperCaptions.read(BuiltinWallpapers.dir(this));
-        // Rows: the two bundled groups, each bundled picture, the theme's pictures, none, then the photo credits.
-        List<String> labels = new ArrayList<>();
-        List<String> values = new ArrayList<>();
-        if (!builtins.isEmpty()) {
-            labels.add(getString(R.string.wallpaper_builtin_photos));
-            values.add(BuiltinWallpapers.PHOTOS);
-            labels.add(getString(R.string.wallpaper_builtin_art));
-            values.add(BuiltinWallpapers.ART);
-            for (File f : builtins) {
-                labels.add(BuiltinWallpapers.label(captions, f));
-                values.add(f.getName());
-            }
-        }
-        for (File f : images) {
-            labels.add(f.getName());
-            values.add(f.getName());
-        }
-        labels.add(getString(R.string.wallpaper_none));
-        values.add(WallpaperRotation.CHOICE_NONE);
-        if (!builtins.isEmpty()) {
-            labels.add(getString(R.string.wallpaper_credits));
-            values.add(null);
-        }
-        String current = choices.getString(Config.WALLPAPER_CHOICE_KEY, null);
-        int checked = current == null ? -1 : values.indexOf(current);
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.wallpaper_label)
-                .setSingleChoiceItems(labels.toArray(new String[0]), checked, (dialog, which) -> {
-                    dialog.dismiss();
-                    String value = values.get(which);
-                    if (value == null) {
-                        showWallpaperCredits(builtins, captions);
-                        return;
-                    }
-                    choices.edit().putString(Config.WALLPAPER_CHOICE_KEY, value).apply();
-                    changed();
-                    Toast.makeText(this, R.string.wallpaper_applied, Toast.LENGTH_SHORT).show();
-                    refresh();
-                })
-                .setNeutralButton(R.string.wallpaper_theme_default, (dialog, which) -> {
-                    choices.edit().remove(Config.WALLPAPER_CHOICE_KEY).apply();
-                    changed();
-                    refresh();
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Back from the wallpaper gallery: show its choice on the row.
+        if (wallpaperChoice != null) refresh();
     }
 
-    /** The bundled photos' authors and licences, which CC BY-SA asks to show with them. */
-    private void showWallpaperCredits(List<File> builtins, Map<String, String> captions) {
-        StringBuilder text = new StringBuilder();
-        for (File f : BuiltinWallpapers.group(builtins, BuiltinWallpapers.PHOTOS)) {
-            String caption = captions.get(f.getName());
-            if (caption != null) text.append("• ").append(caption).append('\n');
-        }
-        text.append('\n').append(getString(R.string.wallpaper_credits_note));
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.wallpaper_credits)
-                .setMessage(text)
-                .setPositiveButton(android.R.string.ok, (dialog, which) -> showWallpaperPicker())
-                .show();
+    /** The gallery: thumbnails, a full-screen preview of the focused one, and the online pictures. */
+    private void showWallpaperPicker() {
+        startActivity(new Intent(this, WallpaperGalleryActivity.class));
     }
 
     /** The current wallpaper choice as the picker names it. */
@@ -261,8 +201,12 @@ public final class LauncherSettingsActivity extends Activity {
         if (WallpaperRotation.CHOICE_NONE.equals(choice)) return getString(R.string.wallpaper_none);
         if (BuiltinWallpapers.PHOTOS.equals(choice)) return getString(R.string.wallpaper_builtin_photos);
         if (BuiltinWallpapers.ART.equals(choice)) return getString(R.string.wallpaper_builtin_art);
-        File builtin = new File(BuiltinWallpapers.dir(this), choice);
-        return builtin.isFile() ? BuiltinWallpapers.label(WallpaperCaptions.read(builtin.getParentFile()), builtin) : choice;
+        if (OnlineWallpapers.GROUP.equals(choice)) return getString(R.string.wallpaper_downloaded_rotate);
+        for (File dir : new File[]{BuiltinWallpapers.dir(this), OnlineWallpapers.dir(this)}) {
+            File f = new File(dir, choice);
+            if (f.isFile()) return BuiltinWallpapers.label(WallpaperCaptions.read(dir), f);
+        }
+        return choice;
     }
 
     /** Checks for a newer version, then offers it; the download and the install follow on the viewer's yes. */

@@ -1,0 +1,126 @@
+{
+ "version": 1,
+ "wallpapers": [
+  {
+   "id": "nc-loch-tummel",
+   "title": "苏格兰 Tummel 湖，秋日倒影",
+   "credit": "Eric Kilby",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Foggy_Reflections_-_Loch_Tummel.jpg",
+   "file": "files/nc-loch-tummel.webp",
+   "size": 289854,
+   "sha256": "0ae614732adad54c854aaff2946abe258eec2e5b15e29c3c60db88dddf61da17",
+   "thumb": "thumbs/nc-loch-tummel.webp"
+  },
+  {
+   "id": "nc-bluebells",
+   "title": "英国 Pryor's Wood，春天的蓝铃花林",
+   "credit": "Colin",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Pryor%27s_Wood_Bluebells_2017-04-26-4.jpg",
+   "file": "files/nc-bluebells.webp",
+   "size": 222046,
+   "sha256": "c8dc0b4a44ec2ceda104123332fa7c234806ddffae9dba14af8b61c3ce5dddb4",
+   "thumb": "thumbs/nc-bluebells.webp"
+  },
+  {
+   "id": "nc-roruper-holz",
+   "title": "德国 Roruper Holz，林间阳光",
+   "credit": "Dietmar Rabich",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:D%C3%BClmen,_Rorup,_NSG_Roruper_Holz_--_2021_--_8187-91.jpg",
+   "file": "files/nc-roruper-holz.webp",
+   "size": 232354,
+   "sha256": "457db753ea3f167a332fe55c8f37723403e6f427dbdc19eb9872ad6a5004cd58",
+   "thumb": "thumbs/nc-roruper-holz.webp"
+  },
+  {
+   "id": "nc-mossy-forest",
+   "title": "比利时 Lierneux，苔藓森林",
+   "credit": "Trougnouf",
+   "license": "CC BY 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Mossy_forest_in_Lierneux_(DSC01260).jpg",
+   "file": "files/nc-mossy-forest.webp",
+   "size": 308226,
+   "sha256": "9e960ca7652a65f24e6fc8a7b12bf31206adce3dbca9e1fa224897a8f7f002d5",
+   "thumb": "thumbs/nc-mossy-forest.webp"
+  },
+  {
+   "id": "nc-khao-sok",
+   "title": "泰国考索，雾中雨林湖",
+   "credit": "Vyacheslav Argenberg",
+   "license": "CC BY 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Cheow_Lan_Lake,_Rainforest,_Khao_Sok,_Thailand.jpg",
+   "file": "files/nc-khao-sok.webp",
+   "size": 119412,
+   "sha256": "8d7eb7261db049121aaf5fecc836303823e4c073e682dc6fd12561d135e0ee14",
+   "thumb": "thumbs/nc-khao-sok.webp"
+  },
+  {
+   "id": "nc-kuang-si",
+   "title": "老挝光西瀑布",
+   "credit": "Basile Morin",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Kuang_Si_Falls_and_a_turquoise_water_pool_in_Luang_Prabang_province_Laos.jpg",
+   "file": "files/nc-kuang-si.webp",
+   "size": 300042,
+   "sha256": "9165651155402a4c465995005910226121e0110fa7a388ec30548af5b0206400",
+   "thumb": "thumbs/nc-kuang-si.webp"
+  },
+  {
+   "id": "retro-day",
+   "title": "复古 · 白天",
+   "credit": "REGT-URRED",
+   "license": "CC0 1.0",
+   "source": "themes/retro",
+   "file": "files/retro-day.webp",
+   "size": 55300,
+   "sha256": "1375f5e0814961bbb0a9febd24589ffb976429920aae4d6b0fcb110aaeb57854",
+   "thumb": "thumbs/retro-day.webp"
+  },
+  {
+   "id": "retro-evening",
+   "title": "复古 · 傍晚",
+   "credit": "REGT-URRED",
+   "license": "CC0 1.0",
+   "source": "themes/retro",
+   "file": "files/retro-evening.webp",
+   "size": 71168,
+   "sha256": "e9d1f75803e0e334f09abb74bc1ba78dd539bc9c5c0d71a34fde5adeb484250c",
+   "thumb": "thumbs/retro-evening.webp"
+  },
+  {
+   "id": "retro-night",
+   "title": "复古 · 夜晚",
+   "credit": "REGT-URRED",
+   "license": "CC0 1.0",
+   "source": "themes/retro",
+   "file": "files/retro-night.webp",
+   "size": 84566,
+   "sha256": "59086c24d2d30391de54785dce6a7ea85b880c4abb565665c19d96378bc419e8",
+   "thumb": "thumbs/retro-night.webp"
+  },
+  {
+   "id": "aurora",
+   "title": "极光",
+   "credit": "CleanYourTV",
+   "license": "MIT",
+   "source": "themes/aurora",
+   "file": "files/aurora.webp",
+   "size": 10874,
+   "sha256": "6f43fcad194f1623707365d796eb542be9662228f3de612743c2b7e071f8eb0f",
+   "thumb": "thumbs/aurora.webp"
+  },
+  {
+   "id": "glass",
+   "title": "深蓝微光",
+   "credit": "CleanYourTV",
+   "license": "MIT",
+   "source": "themes/glass",
+   "file": "files/glass.webp",
+   "size": 8340,
+   "sha256": "8562446e2b2cb426cb57f05270418631b645e3c98b5b405e5b5728e447752b95",
+   "thumb": "thumbs/glass.webp"
+  }
+ ]
+}

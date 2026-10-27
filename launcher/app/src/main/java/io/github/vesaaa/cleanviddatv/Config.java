@@ -656,8 +656,11 @@ final class Config {
         List<File> collection = new ArrayList<>(dir == null ? Collections.emptyList()
                 : WallpaperRotation.images(new File(dir, "wallpapers")));
         collection.addAll(builtins);
+        List<File> downloaded = OnlineWallpapers.downloaded(ctx);
+        collection.addAll(downloaded);
         List<File> chosen = BuiltinWallpapers.isGroup(wallpaperChoice)
                 ? (builtins.isEmpty() ? null : BuiltinWallpapers.group(builtins, wallpaperChoice))
+                : OnlineWallpapers.GROUP.equals(wallpaperChoice) ? (downloaded.isEmpty() ? null : downloaded)
                 : WallpaperRotation.chosen(collection, wallpaper, wallpaperChoice);
         if (chosen != null) {
             wallpapers.clear();
