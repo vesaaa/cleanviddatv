@@ -1,0 +1,82 @@
+# TCL 50DP660 (50DP660*, product "Percee TV", MediaTek MT5658, board platform mt5891, armv7).
+# Android TV 8.0 (API 26), firmware V8-T658T01-LF1V602, build OTT1.180130.001, kernel 3.10.79.
+# Also verified on TCL L49C2US (49-inch C2 series, same product "Percee TV", tcl_eu, mt5891,
+# firmware V8-T658T01-LF1V570, build OTT1.180130.001, security patch 2020-07-05, ~2 GB RAM).
+# Checked on a real TV. Companion package list: examples/tcl-50dp660/debloat.txt.
+#
+# ---- ADB -------------------------------------------------------------------------------------
+# Remote-only route, nothing to install:
+#   Settings > Picture > Advanced Settings > Brightness, highlight Contrast, type 1 9 5 0
+#   > Other > ADB > ON
+#   Settings > About > Build (OK x7) > Developer options > USB debugging > ON
+#   Reboot the TV once if the RSA prompt does not appear on screen (so UsbDebuggingManager
+#   binds to the newly started adbd socket), then adb connect <ip>:5555 and accept the prompt.
+# The two switches do different things: the factory one starts adbd (persist.sys.usb.config=adb),
+# the developer one makes the "Allow USB debugging?" dialog appear. Without the second one every
+# attempt ends as "unauthorized" with nothing on screen, which reads like a network fault.
+# service.adb.tcp.port=5555 is preset by the vendor and survives reboots, so the shell is
+# network-only: the USB-A ports are host-mode and cannot carry ADB.
+# The same menu opens by intent, for automation:
+#   am start -a com.tcl.factory.intent.action.FACTORYMENU     (com.tcl.factory.view/.MainMenu)
+#
+# ---- Inputs ----------------------------------------------------------------------------------
+# Tuner: com.tcl.tvinput/.TDTVInputService. HDMI and AV: com.tcl.tvpassthrough/.
+# TvPassThroughService. The hardware info registers four HDMI ports (hdmi_port=1..4) plus one
+# composite input; the retail spec lists three HDMI sockets, so at least one registration has no
+# external connector. Not verified by plugging cables into every port.
+# Live TV app: com.tcl.tv/.TVActivity.
+#
+# ---- Boot ------------------------------------------------------------------------------------
+# adbd starts about 6 s in, "Boot is finished" at 18.4 s. HOME resolves to the preferred launcher,
+# then com.tcl.tv/.TVActivity takes over 67 ms later because the factory setting is "Power on mode
+# = LAST". After power-on the set therefore lands on Live TV rather than on the launcher, and one
+# press of HOME goes to the launcher. This is expected, not a launcher bug, and it is not
+# configurable from software.
+#
+# ---- Launcher --------------------------------------------------------------------------------
+# com.google.android.tvlauncher holds HOME with priority 2 on this firmware and must be disabled
+# before "cmd package set-home-activity" takes effect; the command prints Success either way.
+# Launcher config: /sdcard/Android/data/com.gathin.tvhome/files/config.json (no rebuild needed).
+#
+# ---- RAM -------------------------------------------------------------------------------------
+# Kernel 3.10 exposes MemTotal, MemFree, Buffers and Cached but no MemAvailable, so any stats line
+# that keys on MemAvailable silently shows nothing. ActivityManager.MemoryInfo works here.
+#
+# ---- Google services after a factory reset ---------------------------------------------------
+# The stock image carries Play services 13.2.92 (2018) and WebView 58.0.3029.125 (Chrome 58, 2017)
+# while the Play Store updates itself to a 2026 build. Symptoms: E/Finsky "GMS compliance query
+# failed", a Google account that cannot be added (generic "something went wrong"), and Netflix
+# error -121 even with a correct clock and working TLS to api.netflix.com.
+# Installing these two over ADB fixes it:
+#   com.google.android.gms       26.40.62 (080306-998995171, armeabi-v7a, 213-320dpi, minAPI 24)
+#   com.google.android.webview   138.0.7204.181 (arm-v7a, Android 8.0+, nodpi)
+# They shadow the /system copies, so nothing has to be unlocked; pm uninstall rolls them back.
+# Verify the signing key first with apksigner --print-certs against the APK pulled from
+# /system/priv-app and /system/app - a mismatch fails as INSTALL_FAILED_UPDATE_INCOMPATIBLE.
+# On this unit both matched (GMS f0:fd:6c:5b..., WebView 6faf3c41...).
+#
+# ---- NVM reset -------------------------------------------------------------------------------
+# 1-Factory menu > NVM reset wipes data Android cannot regenerate:
+#   - Wi-Fi MAC becomes 02:00:00:00:00:00
+#   - the Widevine keybox is gone (WVCdm: "Could not open /factory/wv.keys. Falling Back to L3";
+#     /factory is not even mounted on this unit)
+#   - the Netflix ESN is gone, which surfaces as ui-800-3 and later -121
+# Recovery is a sequence and the order matters:
+#   1. NVM reset
+#   2. factory data reset
+#   3. full firmware reflash over USB (Update.pkg from V8-T658T01-LF1V602.zip, hold POWER)
+# Only step 3 re-provisions the vendor data. After a reflash the Wi-Fi MAC came back and Netflix
+# and the Play Store started working; Widevine stayed at L3 (software CDM), so HD tiers may not be
+# available. Steps 1-2 alone leave the set broken indefinitely.
+#
+# ---- Audio jack ------------------------------------------------------------------------------
+# After a power cut the set keeps playing through the internal speakers with the 3.5 mm plug in.
+# dumpsys audio reports "speaker" after boot and "headphone" after an activity switch; the
+# MediaTek HAL detects the plug but never closes the internal amplifier, and there is no
+# /sys/class/switch/h2w to poll. Bouncing HOME > TVActivity once after boot forces re-detection.
+#
+# ---- Firmware --------------------------------------------------------------------------------
+# V8-T658T01-LF1V602 is the newest release for this platform (V574/V575 circulating online are
+# older). Update.pkg is fully encrypted - entropy 8.000 bits/byte across all 1.37 GB, no filesystem
+# magic, no repeating-key period - so there is nothing to analyse and nothing to modify. USB
+# flashing is the only route, and it wipes /data.

@@ -1,0 +1,23 @@
+# LF in the repository and in every checkout, whatever core.autocrlf says. The shell scripts and
+# gradlew must keep LF to run on Linux, macOS, WSL and Git Bash: with CRLF, bash stops at
+# "set: pipefail\r" and gradlew at "$'\r': command not found".
+* text=auto eol=lf
+
+# cmd.exe batch files need CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files: no line-ending conversion, no textual diff.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.ttf   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+*.jar   binary
+*.apk   binary
+*.zip   binary

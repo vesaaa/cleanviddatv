@@ -1,0 +1,19 @@
+{
+  "dock_apps": [
+    "com.netflix.ninja",
+    "com.google.android.youtube.tv",
+    "com.amazon.amazonvideo.livingroom",
+    "com.android.vending"
+  ],
+  "hidden_apps": [
+    "com.google.android.youtube.tvmusic",
+    "com.nes.seilivetv"
+  ],
+  "live_tv_package": "",
+  "columns": 4,
+  "rows_below_dock": 0,
+  "background_color": "#000000",
+  "wallpaper": false,
+  "show_network_pill": false,
+  "reduced_motion": false
+}

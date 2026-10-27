@@ -1,0 +1,12 @@
+{
+  "live_tv_package": "com.tcl.tv",
+  "settings_key_keycodes": [
+    4077
+  ],
+  "settings_key_panel": true,
+  "app_keys": [
+    "KEYCODE_TCL_NETFLIX:com.netflix.ninja",
+    "KEYCODE_TCL_YOUTUBE:com.google.android.youtube.tv",
+    "4099:com.amazon.amazonvideo.livingroom"
+  ]
+}
