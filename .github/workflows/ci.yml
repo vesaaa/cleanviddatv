@@ -1,9 +1,9 @@
 name: CI
 
+# Releases only: pushes to main and pull requests run nothing; a version tag (v1.0.0, v1.1.0-beta1...) runs it all.
 on:
   push:
-    branches: [main]
-  pull_request:
+    tags: ['v*']
 
 permissions:
   contents: read
@@ -21,9 +21,7 @@ jobs:
         run: |
           python3 -m venv tools/venv
           tools/venv/bin/pip install -q -r tools/requirements.txt
-      - name: Example lists, README tables, shell helpers
-        env:
-          CLEANYOURTV_STRICT: ${{ github.event_name == 'push' && '1' || '' }}
+      - name: Lists, install-vidda.sh and tools
         # The venv interpreter, not the runner's python3: the runner has no adb_shell, so
         # running the suite with it leaves test_tv_reboot to its child-rerun workaround
         # instead of running in-process (#1800).
