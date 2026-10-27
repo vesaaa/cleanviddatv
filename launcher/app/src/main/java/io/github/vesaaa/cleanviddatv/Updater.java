@@ -55,9 +55,9 @@ final class Updater {
         }
     }
 
-    /** The beta channel: on by default while a beta is installed, so a beta tester keeps getting the next one. */
+    /** The beta channel: off until the viewer turns it on in Launcher settings, whatever version is installed. */
     static boolean beta(Context ctx) {
-        return prefs(ctx).getBoolean(KEY_BETA, Updates.isPrerelease(currentVersion(ctx)));
+        return prefs(ctx).getBoolean(KEY_BETA, false);
     }
 
     /** The newest release for the channel if it is newer than this app, else null. Throws when neither source answers. */
