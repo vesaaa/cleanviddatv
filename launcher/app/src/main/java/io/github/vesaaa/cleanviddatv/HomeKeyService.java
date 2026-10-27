@@ -107,6 +107,7 @@ public class HomeKeyService extends AccessibilityService {
         UserManager users = getSystemService(UserManager.class);
         if (users.isUserUnlocked()) {
             loadConfig();
+            UpdateRelaunch.check(this);
             return;
         }
         unlockReceiver = new BroadcastReceiver() {

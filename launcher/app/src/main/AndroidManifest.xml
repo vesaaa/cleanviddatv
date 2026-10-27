@@ -309,6 +309,15 @@
             </intent-filter>
         </receiver>
 
+        <!-- Opens Home again after an install replaced this app while it was Home (UpdateRelaunch). -->
+        <receiver
+            android:name=".UpdateRelaunch"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Turns the ADB switch in the launcher's settings off again after ViddaTools.ADB_AUTO_OFF_MS. -->
         <receiver
             android:name=".ViddaTools$AdbOffReceiver"

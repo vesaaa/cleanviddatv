@@ -385,12 +385,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private java.util.Map<Integer, String> homeAppKeys = java.util.Collections.emptyMap();
 
+    /** Home activities alive in this process; UpdateRelaunch only acts when there are none. */
+    static volatile int alive;
+
     /** This Home's answer to BuiltinWallpapers.onCopied, so a later Home's is not cleared by this one's onDestroy. */
     private Runnable wallpapersCopied;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        alive++;
         setContentView(R.layout.activity_main);
         density = getResources().getDisplayMetrics().density;
         // The ADB switch in the launcher's settings: ADB it turned on goes off after a reboot (HomeKeyService does
@@ -1250,6 +1254,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        alive--;
         if (BuiltinWallpapers.onCopied == wallpapersCopied) BuiltinWallpapers.onCopied = null;
         unregisterReceiver(packageReceiver);
         wallpaperPlayer.close();
