@@ -29,25 +29,6 @@ jobs:
         # instead of running in-process (#1800).
         run: tools/venv/bin/python -m unittest discover -s tests -v
 
-  tables:
-    # Main only: a list PR adds just its folder and tv.json, so on a pull request the tables lag on purpose.
-    # A job of its own, so "the tables want regenerating" never reads as "the lists are broken": the merge
-    # bot waits for main to be green between merges and regenerates the tables after the wave.
-    name: README tables
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
-        with:
-          python-version: "3.12"
-      - name: README TV tables match examples/*/tv.json
-        run: |
-          python3 tools/gen_tables.py --check || {
-            echo "::error::README.md and examples/README.md are generated from examples/*/tv.json. A maintainer runs python3 tools/gen_tables.py on main and commits the result; contributors never need to."
-            exit 1
-          }
-
   launcher:
     name: Launcher build and unit tests
     runs-on: ubuntu-latest

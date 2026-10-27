@@ -1,4 +1,4 @@
-"""README: the Launcher settings section names every row the settings screen has.
+"""README: the launcher settings section names every row the settings screen has, by its Chinese label.
 
 The rows are read from the screen, not from a list kept here. `activity_launcher_settings.xml` carries
 each row, and the three rows whose label the code writes (`wallpaperChoice`, `animationsChoice`,
@@ -15,11 +15,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 LAYOUT = ROOT / "launcher/app/src/main/res/layout/activity_launcher_settings.xml"
 ACTIVITY = ROOT / "launcher/app/src/main/java/io/github/vesaaa/cleanviddatv/LauncherSettingsActivity.java"
-STRINGS = ROOT / "launcher/app/src/main/res/values/strings.xml"
+# CleanViddaTV's README is Chinese, so the labels are the ones a Chinese TV shows.
+STRINGS = ROOT / "launcher/app/src/main/res/values-zh-rCN/strings.xml"
 README = ROOT / "README.md"
 
 ANDROID = "{http://schemas.android.com/apk/res/android}"
-SUMMARY = "Launcher settings and the default home"
+SUMMARY = "桌面设置与默认桌面"
 
 
 def attr(view, name):
@@ -45,7 +46,7 @@ def row_label(name, strings):
     if value is None:
         return None
     value = re.sub(r"%\d\$s", "", value)
-    return value.strip().rstrip(":").strip() or None
+    return value.strip().rstrip(":：").strip() or None
 
 
 def row_labels(layout_text, activity_text, strings):
@@ -151,9 +152,10 @@ class ScreenRows(unittest.TestCase):
         opacities = re.search(r"DOCK_OPACITIES\s*=\s*\{([0-9,\s]+)\}", self.activity_text).group(1)
         opacities = [value.strip() for value in opacities.split(",") if value.strip()]
         section = normalise(self.section)
-        self.assertIn("%s, %s, %s or %s" % tuple(columns), section)
-        self.assertIn("%s to %s" % (under_dock[0], under_dock[-1]), section)
-        self.assertIn("%s%%, %s%%, %s%% or %s%%" % tuple(opacities), section)
+        # Chinese list style: "4、5、6 或 7", "0 到 3".
+        self.assertIn("%s、%s、%s 或 %s" % tuple(columns), section)
+        self.assertIn("%s 到 %s" % (under_dock[0], under_dock[-1]), section)
+        self.assertIn("%s%%、%s%%、%s%% 或 %s%%" % tuple(opacities), section)
 
     def test_a_row_the_readme_leaves_out_is_reported(self):
         rows = [("reorderChoice", "Reorder apps"), ("walls", "Wallpaper")]

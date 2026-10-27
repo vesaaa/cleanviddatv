@@ -1,31 +1,7 @@
-# Security
+# 安全问题报告
 
-CleanYourTV talks to TVs over ADB and installs a launcher on them, so a security bug here can
-reach people's living rooms. Please report anything you find privately, not in a public issue.
+发现 CleanViddaTV 的安全问题（比如恢复功能、ADB 开关被滥用的可能），请通过 GitHub 的
+[私密漏洞报告](https://github.com/vesaaa/CleanViddaTV/security/advisories/new) 提交，不要发公开 issue。
 
-## How to report
-
-Use GitHub's private vulnerability reporting: open the
-[Security tab](https://github.com/Gathin23/cleanyourtv/security) and choose **Report a vulnerability**.
-Only the maintainer sees the report. If that doesn't work for you, email
-[hello@itsgathin.com](mailto:hello@itsgathin.com) with "Security" in the subject.
-
-Please include what is affected (the prompt, a tool in `tools/`, the launcher, a debloat list),
-the steps to reproduce it, and what an attacker could do with it.
-
-## What counts
-
-- The launcher (`io.github.vesaaa.cleanviddatv`) doing something it shouldn't: reaching the network, exposing
-  data to other apps, or being made to open something it shouldn't.
-- The tools (`tools/tv.py`, `disable.sh`, `restore.sh`, `theme.sh`, `recovery.py`) running commands
-  on a device or computer they weren't pointed at, or mishandling paths and input.
-- A debloat list or the prompt leading to a TV that can't be restored with `tools/restore.sh`.
-- Anything in a pull request that runs code on a contributor's or maintainer's machine.
-
-ADB itself is powerful by design. Turning on USB or network debugging lets any computer on your
-network ask to connect, and the TV asks you to allow it. Turn debugging off when you're done.
-
-## What happens next
-
-You'll get a reply within a few days. Fixes go into `main` with credit to you, unless you'd rather
-stay anonymous. Please give a fix a reasonable chance to ship before you publish details.
+已知的设计取舍：国行海信 / Vidda MT9653 打开 ADB 后不需要授权确认（`ro.adb.secure=0`），
+所以安装脚本结束时会关闭 ADB，桌面里的 ADB 开关会在 30 分钟后或重启后自动关闭。
