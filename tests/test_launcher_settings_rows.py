@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 LAYOUT = ROOT / "launcher/app/src/main/res/layout/activity_launcher_settings.xml"
 ACTIVITY = ROOT / "launcher/app/src/main/java/io/github/vesaaa/cleanviddatv/LauncherSettingsActivity.java"
 # CleanViddaTV's README is Chinese, so the labels are the ones a Chinese TV shows.
-STRINGS = ROOT / "launcher/app/src/main/res/values-zh-rCN/strings.xml"
+STRINGS = ROOT / "launcher/app/src/main/res/values/strings.xml"
 README = ROOT / "README.md"
 
 ANDROID = "{http://schemas.android.com/apk/res/android}"

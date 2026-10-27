@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- lunar_date (config.json, off by default): the lunisolar date under the date. Translated where the
-     calendar is used (ko, vi, zh-rCN, zh-rTW); other locales show the English names on purpose. -->
+<!-- lunar_date (config.json, off by default): the lunisolar date under the date, in Chinese (CleanViddaTV is
+     Chinese-only, so these are the default resources). -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="lunar_date_format">Lunar %1$d/%2$s · %3$s</string>
-    <string name="lunar_month_leap">%1$d (leap)</string>
-    <string name="lunar_year">Year of the %2$s</string>
+    <string name="lunar_date_format">农历%2$s月%1$d日 · %3$s</string>
+    <string name="lunar_month_leap">闰%1$d</string>
+    <string name="lunar_year">%1$s%2$s年</string>
     <string-array name="lunar_stems">
-        <item>Jia</item><item>Yi</item><item>Bing</item><item>Ding</item><item>Wu</item>
-        <item>Ji</item><item>Geng</item><item>Xin</item><item>Ren</item><item>Gui</item>
+        <item>甲</item><item>乙</item><item>丙</item><item>丁</item><item>戊</item><item>己</item><item>庚</item><item>辛</item><item>壬</item><item>癸</item>
     </string-array>
     <string-array name="lunar_branches">
-        <item>Rat</item><item>Ox</item><item>Tiger</item><item>Rabbit</item><item>Dragon</item><item>Snake</item>
-        <item>Horse</item><item>Goat</item><item>Monkey</item><item>Rooster</item><item>Dog</item><item>Pig</item>
+        <item>子</item><item>丑</item><item>寅</item><item>卯</item><item>辰</item><item>巳</item><item>午</item><item>未</item><item>申</item><item>酉</item><item>戌</item><item>亥</item>
     </string-array>
 </resources>

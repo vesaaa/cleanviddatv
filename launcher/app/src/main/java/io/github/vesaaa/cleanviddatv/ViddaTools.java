@@ -183,8 +183,12 @@ final class ViddaTools {
             if (!wasOn) setAdb(context, true);
             String out = runShell(context, script);
             return out.contains(RESTORED_MARK) ? null : out.trim();
-        } catch (IOException | SecurityException e) {
-            return String.valueOf(e.getMessage());
+        } catch (SecurityException e) {
+            return context.getString(R.string.restore_err_permission);
+        } catch (java.net.ConnectException | java.net.SocketTimeoutException e) {
+            return context.getString(R.string.restore_err_connect);
+        } catch (IOException e) {
+            return context.getString(R.string.restore_err_adb, String.valueOf(e.getMessage()));
         } finally {
             if (!wasOn) {
                 try {

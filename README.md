@@ -40,8 +40,8 @@ CleanViddaTV 在此基础上做的事：只针对国行海信 / Vidda、开机�
 2. **在电脑上运行**：
 
    ```bash
-   git clone https://github.com/vesaaa/CleanViddaTV
-   cd CleanViddaTV
+   git clone https://github.com/vesaaa/cleanviddatv
+   cd cleanviddatv
    python3 -m venv tools/venv && tools/venv/bin/pip install -r tools/requirements.txt
    TV_HOST=<电视的 IP> ./install-vidda.sh
    ```

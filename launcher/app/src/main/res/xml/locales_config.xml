@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Languages the launcher is translated into: CleanViddaTV targets China-market Hisense / Vidda sets, so
-     Simplified Chinese, with English as the fallback. -->
+<!-- CleanViddaTV is Simplified Chinese only (China-market Hisense / Vidda sets): the default resources are Chinese. -->
 <locale-config xmlns:android="http://schemas.android.com/apk/res/android">
-    <locale android:name="en" />
     <locale android:name="zh-CN" />
 </locale-config>

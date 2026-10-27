@@ -163,7 +163,7 @@ class InstallViddaTest(unittest.TestCase):
     def test_refuses_another_model_without_touching_it(self):
         result, tv = self.install({"model": "BRAVIA 4K"})
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("VIDAA_TV", result.stderr)
+        self.assertIn("VIDAA_TV", result.stderr)  # the refusal names the supported model
         self.assertEqual(tv["disabled"], ["com.factory.off"])
         self.assertFalse(any(c.startswith(("settings put", "pm ")) for c in tv["commands"]))
 

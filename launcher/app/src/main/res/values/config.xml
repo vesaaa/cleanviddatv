@@ -255,8 +255,9 @@
     <!-- The language the launcher shows itself in, as a language tag ("vi", "pt-BR", "ar-EG-u-nu-latn"
          for Arabic with Western digits), instead of the TV's. For firmware
          that has no menu entry for the owner's language although the launcher is translated into it (a China-market
-         Xiaomi offers Chinese and English only). Empty, the default, follows the TV. A theme can set it ("locale"). -->
-    <string name="locale" translatable="false"></string>
+         Xiaomi offers Chinese and English only). Empty follows the TV. CleanViddaTV: always Simplified Chinese, so the
+         date, weekday and lunar line match the (Chinese-only) strings on any system language. A theme can set it ("locale"). -->
+    <string name="locale" translatable="false">zh-CN</string>
 
     <!-- A name after the greeting: "Mr. Trịnh" shows GOOD MORNING, MR. TRỊNH. Empty: the greeting alone. -->
     <string name="greeting_name" translatable="false"></string>

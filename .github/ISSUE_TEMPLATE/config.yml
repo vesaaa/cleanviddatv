@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: 海外版海信 / 不是 Android 的电视？
-    url: https://github.com/vesaaa/CleanViddaTV#支持的机型
+    url: https://github.com/vesaaa/cleanviddatv#支持的机型
     about: CleanViddaTV 只支持国行海信 / Vidda 的 Android 机型（VIDAA_TV，MT9653）。
