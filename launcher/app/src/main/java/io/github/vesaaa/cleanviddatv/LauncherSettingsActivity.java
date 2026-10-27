@@ -310,18 +310,30 @@ public final class LauncherSettingsActivity extends Activity {
                 .show();
         new Thread(() -> {
             String error = null;
+            java.io.File apk = null;
             try {
-                java.io.File apk = Updater.download(this, release,
+                apk = Updater.download(this, release,
                         percent -> runOnUiThread(() -> progress.setMessage(getString(R.string.update_downloading, percent))));
-                Updater.install(this, apk);
             } catch (java.io.IOException | RuntimeException e) {
                 error = String.valueOf(e.getMessage());
             }
             String failure = error;
+            java.io.File downloaded = apk;
             runOnUiThread(() -> {
                 updateBusy = false;
                 progress.dismiss();
-                if (failure != null && !isFinishing()) showUpdateError(failure);
+                if (isFinishing()) return;
+                if (failure != null) {
+                    showUpdateError(failure);
+                    return;
+                }
+                Intent install = Updater.installIntent(this, downloaded);
+                try {
+                    if (install == null) throw new ActivityNotFoundException();
+                    startActivity(install);
+                } catch (ActivityNotFoundException | SecurityException e) {
+                    showUpdateError(getString(R.string.update_err_install, getString(R.string.update_err_no_installer)));
+                }
             });
         }, "update-download").start();
     }

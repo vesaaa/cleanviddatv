@@ -198,4 +198,5 @@
     <string name="update_err_checksum">下载的文件校验不通过，请稍后重试</string>
     <string name="update_err_signature">下载的安装包签名与当前版本不同，已拒绝安装</string>
     <string name="update_err_install">安装失败：%1$s</string>
+    <string name="update_err_no_installer">电视上找不到系统安装器</string>
 </resources>

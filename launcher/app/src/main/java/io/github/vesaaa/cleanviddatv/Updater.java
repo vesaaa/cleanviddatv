@@ -1,14 +1,15 @@
 package io.github.vesaaa.cleanviddatv;
 
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.net.Uri;
 import android.os.Build;
+
+import androidx.core.content.FileProvider;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -25,8 +26,8 @@ import java.util.Arrays;
 
 /**
  * Online update: finds a newer release (the CDN first, GitHub when the CDN cannot be reached), downloads it the same
- * way, checks its SHA-256 and that it carries this app's own signing certificate, and hands it to the system
- * installer, which asks the viewer to confirm. Blocking calls: run them off the main thread.
+ * way, checks its SHA-256 and that it carries this app's own signing certificate, and opens the system installer
+ * on it, which asks the viewer to confirm. Blocking calls: run them off the main thread.
  */
 final class Updater {
     static final String PREFS = "updates";
@@ -116,22 +117,20 @@ final class Updater {
         return apk;
     }
 
-    /** Hands the APK to the system installer; UpdateResultReceiver shows its confirmation. */
-    static void install(Context ctx, File apk) throws IOException {
-        PackageInstaller installer = ctx.getPackageManager().getPackageInstaller();
-        PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
-        params.setAppPackageName(ctx.getPackageName());
-        params.setSize(apk.length());
-        int id = installer.createSession(params);
-        try (PackageInstaller.Session session = installer.openSession(id)) {
-            try (InputStream in = new FileInputStream(apk); OutputStream out = session.openWrite("base.apk", 0, apk.length())) {
-                copy(in, out, apk.length(), null);
-                session.fsync(out);
-            }
-            int flags = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
-            PendingIntent result = PendingIntent.getBroadcast(ctx, id, new Intent(ctx, UpdateResultReceiver.class), flags);
-            session.commit(result.getIntentSender());
-        }
+    /**
+     * The system installer's own screen for the APK, opened by the settings screen itself. A PackageInstaller session
+     * was tried first: on the 65V1N-X its commit sometimes never came back with the confirmation, so nothing appeared.
+     * Null when this TV has no installer for it.
+     */
+    static Intent installIntent(Context ctx, File apk) {
+        Uri uri = FileProvider.getUriForFile(ctx, ctx.getPackageName() + ".updates", apk);
+        PackageManager pm = ctx.getPackageManager();
+        Intent install = new Intent(Intent.ACTION_INSTALL_PACKAGE).setData(uri)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        if (install.resolveActivity(pm) != null) return install;
+        Intent view = new Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/vnd.android.package-archive")
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        return view.resolveActivity(pm) != null ? view : null;
     }
 
     private static boolean sameSigner(Context ctx, File apk) {

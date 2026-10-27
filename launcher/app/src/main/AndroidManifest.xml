@@ -28,7 +28,7 @@
          this firmware lacks. Never requested at runtime: install-vidda.sh grants it with appops. -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-    <!-- Online update: hands the downloaded APK to the system installer, which asks the viewer to confirm. install-vidda.sh
+    <!-- Online update: opens the system installer on the downloaded APK, which asks the viewer to confirm. install-vidda.sh
          allows it with appops, since this firmware's Settings has no "install unknown apps" page to do it from. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
@@ -254,10 +254,16 @@
                 <data android:mimeType="*/*" />
             </intent-filter>
         </activity>
-        <!-- The system installer's answer to an online update (Updater): opens its confirmation, reports a failure. -->
-        <receiver
-            android:name=".UpdateResultReceiver"
-            android:exported="false" />
+        <!-- The downloaded update (cache/update), handed to the system installer by Updater.installIntent. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.updates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/update_paths" />
+        </provider>
         <!-- The documents FilePickerActivity hands out. Only the system holds MANAGE_DOCUMENTS: apps reach these
              documents through the URI grants the picker gives them, never by querying the provider themselves. -->
         <provider
