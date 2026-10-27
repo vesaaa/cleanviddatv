@@ -1,0 +1,9 @@
+builtin-photo-01.webp	老挝万荣，晨雾中的喀斯特山谷 · Basile Morin，CC BY-SA 4.0
+builtin-photo-02.webp	泰国 Tham Sakoen，晨雾山谷 · BerryJ，CC BY-SA 4.0
+builtin-photo-03.webp	新西兰 Mystery 湖 · Michal Klajban，CC BY-SA 4.0
+builtin-photo-04.webp	奥地利 Ossiacher 湖 · Johann Jaritz，CC BY-SA 4.0
+builtin-photo-05.webp	爱沙尼亚 Karula，霜林日出 · Amadvr，CC BY-SA 3.0
+builtin-photo-06.webp	乌克兰切尔卡瑟，河流晨曦 · Oleksandr Malyon，CC BY-SA 4.0
+builtin-art-01.webp	抽象光影 · 深蓝
+builtin-art-02.webp	抽象光影 · 青绿
+builtin-art-03.webp	抽象光影 · 暮色

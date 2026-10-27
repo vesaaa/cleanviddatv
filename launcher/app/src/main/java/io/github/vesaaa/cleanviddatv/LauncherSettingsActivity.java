@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /** Remote-friendly settings owned by the launcher; system settings stay one row away. */
 public final class LauncherSettingsActivity extends Activity {
@@ -178,22 +179,43 @@ public final class LauncherSettingsActivity extends Activity {
         // A theme with a single wallpaper.jpg offers that picture too (Config maps the choice back to it).
         File single = dir == null ? null : new File(dir, Config.WALLPAPER_NAME);
         if (single != null && single.isFile()) images.add(0, single);
-        String[] labels = new String[images.size() + 1];
-        for (int i = 0; i < images.size(); i++) labels[i] = images.get(i).getName();
-        labels[images.size()] = getString(R.string.wallpaper_none);
+        List<File> builtins = BuiltinWallpapers.all(this);
+        Map<String, String> captions = WallpaperCaptions.read(BuiltinWallpapers.dir(this));
+        // Rows: the two bundled groups, each bundled picture, the theme's pictures, none, then the photo credits.
+        List<String> labels = new ArrayList<>();
+        List<String> values = new ArrayList<>();
+        if (!builtins.isEmpty()) {
+            labels.add(getString(R.string.wallpaper_builtin_photos));
+            values.add(BuiltinWallpapers.PHOTOS);
+            labels.add(getString(R.string.wallpaper_builtin_art));
+            values.add(BuiltinWallpapers.ART);
+            for (File f : builtins) {
+                labels.add(BuiltinWallpapers.label(captions, f));
+                values.add(f.getName());
+            }
+        }
+        for (File f : images) {
+            labels.add(f.getName());
+            values.add(f.getName());
+        }
+        labels.add(getString(R.string.wallpaper_none));
+        values.add(WallpaperRotation.CHOICE_NONE);
+        if (!builtins.isEmpty()) {
+            labels.add(getString(R.string.wallpaper_credits));
+            values.add(null);
+        }
         String current = choices.getString(Config.WALLPAPER_CHOICE_KEY, null);
-        int checked = "none".equals(current) ? images.size()
-                : indexOf(images, current);
+        int checked = current == null ? -1 : values.indexOf(current);
         new AlertDialog.Builder(this)
                 .setTitle(R.string.wallpaper_label)
-                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                .setSingleChoiceItems(labels.toArray(new String[0]), checked, (dialog, which) -> {
                     dialog.dismiss();
-                    if (which == images.size()) {
-                        choices.edit().putString(Config.WALLPAPER_CHOICE_KEY, "none").apply();
-                    } else {
-                        choices.edit().putString(Config.WALLPAPER_CHOICE_KEY,
-                                images.get(which).getName()).apply();
+                    String value = values.get(which);
+                    if (value == null) {
+                        showWallpaperCredits(builtins, captions);
+                        return;
                     }
+                    choices.edit().putString(Config.WALLPAPER_CHOICE_KEY, value).apply();
                     changed();
                     Toast.makeText(this, R.string.wallpaper_applied, Toast.LENGTH_SHORT).show();
                     refresh();
@@ -205,6 +227,31 @@ public final class LauncherSettingsActivity extends Activity {
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
+    }
+
+    /** The bundled photos' authors and licences, which CC BY-SA asks to show with them. */
+    private void showWallpaperCredits(List<File> builtins, Map<String, String> captions) {
+        StringBuilder text = new StringBuilder();
+        for (File f : BuiltinWallpapers.group(builtins, BuiltinWallpapers.PHOTOS)) {
+            String caption = captions.get(f.getName());
+            if (caption != null) text.append("• ").append(caption).append('\n');
+        }
+        text.append('\n').append(getString(R.string.wallpaper_credits_note));
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.wallpaper_credits)
+                .setMessage(text)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> showWallpaperPicker())
+                .show();
+    }
+
+    /** The current wallpaper choice as the picker names it. */
+    private String wallpaperLabel(String choice) {
+        if (choice == null) return getString(R.string.wallpaper_theme_default);
+        if (WallpaperRotation.CHOICE_NONE.equals(choice)) return getString(R.string.wallpaper_none);
+        if (BuiltinWallpapers.PHOTOS.equals(choice)) return getString(R.string.wallpaper_builtin_photos);
+        if (BuiltinWallpapers.ART.equals(choice)) return getString(R.string.wallpaper_builtin_art);
+        File builtin = new File(BuiltinWallpapers.dir(this), choice);
+        return builtin.isFile() ? BuiltinWallpapers.label(WallpaperCaptions.read(builtin.getParentFile()), builtin) : choice;
     }
 
     /** Off, then every app with a TV entry point by name. Saved at once; it is read on the next boot. */
@@ -255,14 +302,6 @@ public final class LauncherSettingsActivity extends Activity {
         }
     }
 
-    private static int indexOf(List<File> images, String name) {
-        if (name == null) return -1;
-        for (int i = 0; i < images.size(); i++) {
-            if (images.get(i).getName().equals(name)) return i;
-        }
-        return -1;
-    }
-
     /**
      * A choice was saved. Home rebuilds when it next resumes because the change count moved, whether these
      * settings are left with Back or with the remote's Home button (which cancels the activity result).
@@ -297,10 +336,7 @@ public final class LauncherSettingsActivity extends Activity {
         advancedChoice.setEnabled(animations);
         advancedChoice.setAlpha(animations ? 1f : 0.5f);
         String wallpaperCurrent = choices.getString(Config.WALLPAPER_CHOICE_KEY, null);
-        wallpaperChoice.setText(getString(R.string.wallpaper_state,
-                "none".equals(wallpaperCurrent) ? getString(R.string.wallpaper_none)
-                        : wallpaperCurrent != null ? wallpaperCurrent
-                        : getString(R.string.wallpaper_theme_default)));
+        wallpaperChoice.setText(getString(R.string.wallpaper_state, wallpaperLabel(wallpaperCurrent)));
         openOnStartChoice.setText(getString(R.string.open_on_start_state, openOnStartLabel()));
         followThemeChoice.setSelected(!hasOnTvChoices());
         String address = ViddaTools.address(this);

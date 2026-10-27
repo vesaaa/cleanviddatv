@@ -351,8 +351,8 @@
          With dock_row the band grows down to hold the dock's names too. -->
     <bool name="always_show_names">false</bool>
     <!-- Wallpapers decode as RGB_565 (2 bytes a pixel, 4 MB at 1080p), which bands dark gradients such as a night
-         sky, most of all under wallpaper_dim. true decodes them in 32-bit colour: 8 MB, for TVs with 2 GB or more. -->
-    <bool name="wallpaper_true_color">false</bool>
+         sky, most of all under wallpaper_dim. true decodes them in 32-bit colour: 8 MB, for TVs with 2 GB or more. CleanViddaTV: on (MT9653 sets have 4 GB). -->
+    <bool name="wallpaper_true_color">true</bool>
     <!-- Rotating wallpapers: show each picture's name under the top-right buttons, from a captions.txt next to the
          pictures in wallpapers/ ("01-dusk.jpg<TAB>Dusk over the peaks", one per line). A picture without a line
          shows no name. Can also be set with "wallpaper_captions": true in a theme's config.json. -->
@@ -440,6 +440,10 @@
          plain colour, like the tvOS home screen. Drawn from gradients, no picture in memory. CleanViddaTV: on.
          Can also be set with "soft_backdrop": false in a theme's config.json. -->
     <bool name="soft_backdrop">true</bool>
+    <!-- With no wallpaper from a theme, the pictures bundled with the launcher (assets/wallpapers): six landscape photos,
+         a new one every hour under a light shade, and three fields of soft light to pick from Launcher settings > Wallpaper.
+         CleanViddaTV: on. A theme can set "builtin_wallpapers": false, and "wallpaper": false shows none at all. -->
+    <bool name="builtin_wallpapers">true</bool>
     <!-- Where the TV is, in decimal degrees, so the sky's sunrise and sunset glows follow the real sun
          (computed on the TV, no network). Empty: a fixed temperate day, sunset glow around 19:00.
          Vilnius: 54.69 and 25.28. -->

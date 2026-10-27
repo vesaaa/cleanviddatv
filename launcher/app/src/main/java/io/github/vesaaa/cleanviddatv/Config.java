@@ -643,16 +643,36 @@ final class Config {
             wallpapers.addAll(WallpaperRotation.images(new File(dir, "wallpapers")));
         }
         if (wallpapers.isEmpty() && wallpaper != null) wallpapers.add(wallpaper);
-        // An on-TV wallpaper pick overrides the theme: a filename from the wallpapers/
-        // collection, or "none". Unset means the theme decides (off by default).
+        // No picture from a theme: the ones bundled with the launcher (config.xml builtin_wallpapers), the photos.
+        boolean builtinWallpapers = res.getBoolean(R.bool.builtin_wallpapers);
+        if (json != null) builtinWallpapers = bool(json, "builtin_wallpapers", builtinWallpapers);
+        List<File> builtins = builtinWallpapers ? BuiltinWallpapers.all(ctx) : Collections.emptyList();
+        if (wallpapers.isEmpty() && wallpaperEnabled) {
+            wallpapers.addAll(BuiltinWallpapers.group(builtins, BuiltinWallpapers.PHOTOS));
+        }
+        // An on-TV wallpaper pick overrides the theme: a filename from the wallpapers/ collection or the bundled
+        // pictures, a bundled group, or "none". Unset means the theme decides (the bundled photos without one).
         String wallpaperChoice = choices.getString(WALLPAPER_CHOICE_KEY, null);
-        List<File> chosen = WallpaperRotation.chosen(dir == null ? Collections.emptyList()
-                : WallpaperRotation.images(new File(dir, "wallpapers")), wallpaper, wallpaperChoice);
+        List<File> collection = new ArrayList<>(dir == null ? Collections.emptyList()
+                : WallpaperRotation.images(new File(dir, "wallpapers")));
+        collection.addAll(builtins);
+        List<File> chosen = BuiltinWallpapers.isGroup(wallpaperChoice)
+                ? (builtins.isEmpty() ? null : BuiltinWallpapers.group(builtins, wallpaperChoice))
+                : WallpaperRotation.chosen(collection, wallpaper, wallpaperChoice);
         if (chosen != null) {
             wallpapers.clear();
             wallpapers.addAll(chosen);
             wallpaper = chosen.isEmpty() ? null : chosen.get(0);
             wallpaperEnabled = !chosen.isEmpty();
+        }
+        if (BuiltinWallpapers.only(wallpapers, ctx)) {
+            if (rotationMinutes == 0) rotationMinutes = BuiltinWallpapers.ROTATION_MINUTES;
+            if (wallpaperDim == 0) wallpaperDim = BuiltinWallpapers.DIM;
+            // Let the photo show: no tinted artwork or app-coloured glow over it, and a lighter shelf scrim. A theme
+            // that sets these keys keeps its own values.
+            if (json == null || !json.has("cinematic_art")) cinematicArt = 0;
+            if (json == null || !json.has("ambient_glow")) ambientGlow = false;
+            if (json == null || !json.has("cinematic_scrim")) cinematicScrim = Math.min(cinematicScrim, BuiltinWallpapers.SCRIM);
         }
         // A festive skin comes only from a theme; config.xml has no festival.
         Festival festival = json == null ? Festival.NONE : Festival.parse(string(json, "festival", ""),

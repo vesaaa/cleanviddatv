@@ -105,6 +105,7 @@ A new key needs one there in the same pull request.
 | `background_color` | `#RRGGBB` | Colour behind everything; black by default |
 | `sky_intensity` | 0 to 100 | Time-of-day backdrop: a dark gradient that follows the clock, 0 hides it (default) |
 | `soft_backdrop` | bool | With no wallpaper, soft pools of blue, violet and teal light over `background_color`, like the tvOS home (`true` in CleanViddaTV) |
+| `builtin_wallpapers` | bool | With no picture from the theme, the launcher's bundled wallpapers: six landscape photos, one an hour under a 25% shade with the shelf's tint and app glow off, and three soft-light fields to pick in Launcher settings (`true` in CleanViddaTV; credits in `launcher/app/src/main/assets/wallpapers/CREDITS.md`) |
 | `wallpaper` | bool | Show the theme's picture, `wallpaper.jpg` or its `wallpapers/` collection (`true`), or draw neither (`false`) |
 | `wallpaper_rotation_minutes` | 0 to 1440 | Rotate images in the theme's `wallpapers/` folder at this interval; 0 keeps the single-image behaviour. A negative or non-numeric value is ignored, and 0 means "no rotation", not "every minute" |
 | `wallpaper_order` | `shuffle` or `sequential` | How a collection advances. `shuffle` (the default, and what launchers did before this key existed) avoids repeating the current picture; `sequential` walks the folder in filename order and wraps at the end. An unknown value falls back to `shuffle` |
