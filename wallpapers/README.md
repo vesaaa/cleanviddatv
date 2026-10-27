@@ -2,8 +2,8 @@
 
 The launcher's wallpaper gallery (Launcher settings > Wallpaper) lists these pictures under 在线壁纸 and downloads one
 on OK. It reads `index.json` from the CDN (`download.aikit.stream/cleanviddatv/wallpapers/`, synced by the release
-workflow when the R2 secrets are set), then jsDelivr (`cdn.jsdelivr.net/gh/vesaaa/cleanviddatv@main/wallpapers/`),
-then GitHub, so a picture added here on `main` reaches TVs without a new release.
+workflow when the R2 secrets are set, at each release), then GitHub (`raw.githubusercontent.com/.../main/wallpapers/`),
+so a picture added here on `main` reaches TVs through GitHub at once and through the CDN with the next release.
 
 To add one:
 

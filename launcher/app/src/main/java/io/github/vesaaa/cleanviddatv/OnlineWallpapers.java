@@ -24,14 +24,13 @@ import java.util.Map;
 
 /**
  * Wallpapers to download: the repository's wallpapers/ folder (index.json, files/, thumbs/; tools/wallpapers.py
- * builds it), read from the CDN first, then jsDelivr's copy of the repository, then GitHub itself. Downloads land in
+ * builds it), read from the CDN first, then from GitHub. Downloads land in
  * app storage with a captions.txt, so the wallpaper picker and WallpaperPlayer treat them like the bundled ones.
  */
 final class OnlineWallpapers {
     /** Where the folder is published, tried in this order. */
     static final String[] BASES = {
             "https://download.aikit.stream/cleanviddatv/wallpapers/",
-            "https://cdn.jsdelivr.net/gh/vesaaa/cleanviddatv@main/wallpapers/",
             "https://raw.githubusercontent.com/vesaaa/cleanviddatv/main/wallpapers/",
     };
     /** Picker choice for the downloaded pictures as a rotating group, stored like a file name. */

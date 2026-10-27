@@ -206,7 +206,7 @@
     <string name="wallpaper_section_downloaded">已下载（长按删除）</string>
     <string name="wallpaper_section_online">在线壁纸</string>
     <string name="wallpaper_section_online_loading">在线壁纸（正在加载…）</string>
-    <string name="wallpaper_section_online_failed">在线壁纸（连不上：CDN、jsDelivr、GitHub 都试过了）</string>
+    <string name="wallpaper_section_online_failed">在线壁纸（连不上：CDN 和 GitHub 都试过了）</string>
     <string name="wallpaper_section_online_done">在线壁纸（已全部下载）</string>
     <string name="wallpaper_section_more">其他</string>
     <string name="wallpaper_downloaded_rotate">已下载（每小时轮换）</string>
