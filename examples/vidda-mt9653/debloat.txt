@@ -100,6 +100,13 @@ com.android.printspooler
 # com.jamdeo.tv.vod
 com.keylab.speech.view.vidaa
 
+# 电视管家 (vidaaassistant): memory "acceleration", an app auto-start manager, an unknown-sources permission screen,
+# network diagnosis. Pressing the remote's voice key turns its AppAccessibilityService back on next to HomeKeyService
+# (log tag HisXiaoJu), and two accessibility services at once is what froze all input with a USB/Bluetooth mouse on a
+# 65D62QH (docs/devices/hisense-65d62qh.md). Removing it from enabled_accessibility_services does not last; disabling
+# the package does. The voice UI it would serve is already off with com.keylab.speech.view.vidaa above.
+com.hisense.vidaaassistant
+
 # ---------------------------------------------------------------------------------------------
 # Do NOT disable (verified on this device):
 #   com.jamdeo.tv.livetv          Live TV and the HDMI/AV renderer
@@ -122,6 +129,6 @@ com.keylab.speech.view.vidaa
 # Kept by choice: com.ms.weshare, com.ms.ucast.ucastapp, com.hisense.multiscreen.screenhelper,
 #   com.hisense.pcm.share, com.kookong.tvplus (five coexisting casting stacks), com.hisense.tv.familycloud,
 #   com.hisense.nasservice, com.hisense.nas.pt (NAS), com.hisense.tv.aivirtualassistant and the rest of the
-#   voice assistant, com.hisense.childlock, com.hisense.multiwindow.
+#   voice assistant (but not com.hisense.vidaaassistant, above), com.hisense.childlock, com.hisense.multiwindow.
 # Already disabled at the factory: com.android.contacts, camera2, calendar, settings, music,
 #   providers.userdictionary, deskclock, providers.contacts.
