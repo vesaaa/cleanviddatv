@@ -8,8 +8,8 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Only for 127.0.0.1: the restore connects to the TV's own adbd (LocalAdb). The launcher opens no other
-         connection. -->
+    <!-- The restore connects to the TV's own adbd on 127.0.0.1 (LocalAdb), and the online update (Updater) to
+         download.aikit.stream and, when that fails, GitHub. The launcher opens no other connection. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- Needed since Android 10 to read the Wi-Fi network name for the network pill. Never requested at
@@ -28,6 +28,9 @@
          this firmware lacks. Never requested at runtime: install-vidda.sh grants it with appops. -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
+    <!-- Online update: hands the downloaded APK to the system installer, which asks the viewer to confirm. install-vidda.sh
+         allows it with appops, since this firmware's Settings has no "install unknown apps" page to do it from. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- Android 11+ package visibility: lets the launcher list the TV apps it shows as tiles, and the
          apps that declare a module card (docs/specs/card.md). -->
@@ -251,6 +254,10 @@
                 <data android:mimeType="*/*" />
             </intent-filter>
         </activity>
+        <!-- The system installer's answer to an online update (Updater): opens its confirmation, reports a failure. -->
+        <receiver
+            android:name=".UpdateResultReceiver"
+            android:exported="false" />
         <!-- The documents FilePickerActivity hands out. Only the system holds MANAGE_DOCUMENTS: apps reach these
              documents through the URI grants the picker gives them, never by querying the provider themselves. -->
         <provider

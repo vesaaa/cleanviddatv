@@ -944,6 +944,27 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         tileRefresh.onStart();
     }
 
+    /** Once a day, off the main thread: a newer version puts a small dot on the Settings button. */
+    private void checkForUpdateDaily() {
+        View settings = findViewById(R.id.btnSettings);
+        if (settings == null) return;
+        new Thread(() -> {
+            String available = Updater.checkDaily(getApplicationContext());
+            settings.post(() -> showUpdateDot(settings, !available.isEmpty()));
+        }, "update-daily").start();
+    }
+
+    private void showUpdateDot(View settings, boolean on) {
+        settings.getOverlay().clear();
+        if (!on || settings.getWidth() == 0) return;
+        android.graphics.drawable.GradientDrawable dot = new android.graphics.drawable.GradientDrawable();
+        dot.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        dot.setColor(0xFFFF453A);
+        int size = Math.round(10 * density), inset = Math.round(3 * density);
+        dot.setBounds(settings.getWidth() - size - inset, inset, settings.getWidth() - inset, inset + size);
+        settings.getOverlay().add(dot);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -959,6 +980,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             recreate();
             return;
         }
+        checkForUpdateDaily();
         restartIdleClock();
         promptsPaused = false;
         if (grid.getAdapter() == null) grid.setAdapter(adapter);   // dropped by onTrimMemory

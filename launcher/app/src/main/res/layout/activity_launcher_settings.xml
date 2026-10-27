@@ -155,6 +155,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
+            android:text="@string/update_label"
+            android:textColor="#FFFFFFFF"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/updateChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/updateBetaChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="18dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
             android:text="@string/vidda_tools_label"
             android:textColor="#FFFFFFFF"
             android:textSize="20sp" />

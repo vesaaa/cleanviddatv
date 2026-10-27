@@ -144,6 +144,7 @@ class InstallViddaTest(unittest.TestCase):
         self.assertEqual(tv["settings"]["enabled_accessibility_services"], PKG + "/.HomeKeyService")
         self.assertIn("android.permission.WRITE_SECURE_SETTINGS", tv["granted"])
         self.assertIn("MANAGE_EXTERNAL_STORAGE", tv["granted"], "the file picker needs all-files access")
+        self.assertIn("REQUEST_INSTALL_PACKAGES", tv["granted"], "online update hands the APK to the system installer")
 
     def test_turns_adb_off_at_the_end_unless_kept(self):
         _, tv = self.install()

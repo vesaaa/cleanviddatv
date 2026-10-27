@@ -112,3 +112,52 @@ jobs:
           case "$GITHUB_REF_NAME" in *-*) pre=--prerelease ;; *) pre= ;; esac
           gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --title "CleanViddaTV $VERSION" \
             --verify-tag --generate-notes $pre
+      - name: Publish to the CDN
+        # The launcher's online update reads cleanviddatv/latest.json (stable) or beta.json (with "接收测试版") from
+        # download.aikit.stream first, and GitHub only when the CDN cannot be reached. Same R2 bucket and secrets as VsTV.
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_PUBLIC_BASE_URL: ${{ secrets.R2_PUBLIC_BASE_URL }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          if [ -z "$R2_ACCOUNT_ID" ] || [ -z "$R2_ACCESS_KEY_ID" ] || [ -z "$R2_SECRET_ACCESS_KEY" ] || [ -z "$R2_BUCKET" ] || [ -z "$R2_PUBLIC_BASE_URL" ]; then
+            echo "::warning::R2 secrets missing: not on the CDN, online update falls back to GitHub"
+            exit 0
+          fi
+          export AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" AWS_DEFAULT_REGION=auto
+          endpoint="${R2_ENDPOINT:-https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com}"
+          base="${R2_PUBLIC_BASE_URL%/}"
+          apk="CleanViddaTV-$VERSION.apk"
+          aws s3 cp "dist/$apk" "s3://$R2_BUCKET/cleanviddatv/$VERSION/$apk" --endpoint-url "$endpoint" \
+            --content-type application/vnd.android.package-archive
+          git fetch -q --depth=1 origin "+refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME" || true
+          NOTES="$(git for-each-ref "refs/tags/$GITHUB_REF_NAME" --format='%(contents:body)')" \
+          APK_URL="$base/cleanviddatv/$VERSION/$apk" \
+          GITHUB_APK="https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/$apk" \
+          SHA256="$(cut -d' ' -f1 "dist/$apk.sha256")" SIZE="$(stat -c %s "dist/$apk")" \
+          python3 - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          manifest = {
+              "version": os.environ["VERSION"],
+              "tag": os.environ["GITHUB_REF_NAME"],
+              "published_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+              "notes": os.environ.get("NOTES", "").strip(),
+              "apk": os.environ["APK_URL"],
+              "github_apk": os.environ["GITHUB_APK"],
+              "sha256": os.environ["SHA256"],
+              "size": int(os.environ["SIZE"]),
+          }
+          open("manifest.json", "w", encoding="utf-8").write(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
+          print(open("manifest.json", encoding="utf-8").read())
+          PY
+          # A beta goes to beta.json only; a stable release to both, so the beta channel moves on to it too.
+          channels="beta.json"
+          case "$GITHUB_REF_NAME" in *-*) ;; *) channels="latest.json beta.json" ;; esac
+          for name in $channels; do
+            aws s3 cp manifest.json "s3://$R2_BUCKET/cleanviddatv/$name" --endpoint-url "$endpoint" \
+              --content-type "application/json; charset=utf-8" --cache-control "max-age=300"
+          done

@@ -39,6 +39,9 @@ public final class LauncherSettingsActivity extends Activity {
     private TextView followThemeChoice;
     private TextView openOnStartChoice;
     private TextView adbChoice;
+    private TextView updateChoice, updateBetaChoice;
+    /** An update check or download is running: further presses wait for it. */
+    private boolean updateBusy;
     private int columns;
     private int rowsBelowDock;
     private int dockOpacity;
@@ -161,6 +164,14 @@ public final class LauncherSettingsActivity extends Activity {
         adbChoice = findViewById(R.id.adbChoice);
         adbChoice.setOnClickListener(v -> toggleAdb());
         findViewById(R.id.restoreChoice).setOnClickListener(v -> confirmRestore());
+        updateChoice = findViewById(R.id.updateChoice);
+        updateChoice.setOnClickListener(v -> checkForUpdate());
+        updateBetaChoice = findViewById(R.id.updateBetaChoice);
+        updateBetaChoice.setOnClickListener(v -> {
+            Updater.prefs(this).edit().putBoolean(Updater.KEY_BETA, !Updater.beta(this))
+                    .putString(Updater.KEY_AVAILABLE, "").apply();
+            refresh();
+        });
         refresh();
         if (config.launcherSettingsButton) reorderChoice.requestFocus();
         else columnChoices[Math.max(0, Math.min(columns - 4, 3))].requestFocus();
@@ -254,6 +265,75 @@ public final class LauncherSettingsActivity extends Activity {
         return builtin.isFile() ? BuiltinWallpapers.label(WallpaperCaptions.read(builtin.getParentFile()), builtin) : choice;
     }
 
+    /** Checks for a newer version, then offers it; the download and the install follow on the viewer's yes. */
+    private void checkForUpdate() {
+        if (updateBusy) return;
+        updateBusy = true;
+        updateChoice.setText(R.string.update_checking);
+        new Thread(() -> {
+            Updates.Release release;
+            String error = null;
+            try {
+                release = Updater.check(this);
+            } catch (java.io.IOException e) {
+                release = null;
+                error = getString(R.string.update_err_network, String.valueOf(e.getMessage()));
+            }
+            Updates.Release found = release;
+            String failure = error;
+            runOnUiThread(() -> {
+                updateBusy = false;
+                refresh();
+                if (isFinishing()) return;
+                if (failure != null) {
+                    showUpdateError(failure);
+                } else if (found == null) {
+                    Toast.makeText(this, R.string.update_latest, Toast.LENGTH_SHORT).show();
+                } else {
+                    new AlertDialog.Builder(this)
+                            .setTitle(getString(R.string.update_found_title, found.version))
+                            .setMessage((found.notes.isEmpty() ? "" : found.notes + "\n\n") + getString(R.string.update_found_notes))
+                            .setPositiveButton(R.string.update_now, (d, w) -> downloadUpdate(found))
+                            .setNegativeButton(R.string.update_later, null)
+                            .show();
+                }
+            });
+        }, "update-check").start();
+    }
+
+    private void downloadUpdate(Updates.Release release) {
+        updateBusy = true;
+        AlertDialog progress = new AlertDialog.Builder(this)
+                .setTitle(getString(R.string.update_found_title, release.version))
+                .setMessage(getString(R.string.update_downloading, 0))
+                .setCancelable(false)
+                .show();
+        new Thread(() -> {
+            String error = null;
+            try {
+                java.io.File apk = Updater.download(this, release,
+                        percent -> runOnUiThread(() -> progress.setMessage(getString(R.string.update_downloading, percent))));
+                Updater.install(this, apk);
+            } catch (java.io.IOException | RuntimeException e) {
+                error = String.valueOf(e.getMessage());
+            }
+            String failure = error;
+            runOnUiThread(() -> {
+                updateBusy = false;
+                progress.dismiss();
+                if (failure != null && !isFinishing()) showUpdateError(failure);
+            });
+        }, "update-download").start();
+    }
+
+    private void showUpdateError(String message) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.update_failed_title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
     /** Off, then every app with a TV entry point by name. Saved at once; it is read on the next boot. */
     private void showOpenOnStartPicker() {
         PackageManager pm = getPackageManager();
@@ -340,6 +420,13 @@ public final class LauncherSettingsActivity extends Activity {
         openOnStartChoice.setText(getString(R.string.open_on_start_state, openOnStartLabel()));
         followThemeChoice.setSelected(!hasOnTvChoices());
         String address = ViddaTools.address(this);
+        String version = Updater.currentVersion(this);
+        String available = Updater.prefs(this).getString(Updater.KEY_AVAILABLE, "");
+        updateChoice.setText(!available.isEmpty() && Updates.compare(available, version) > 0
+                ? getString(R.string.update_state_available, available, version)
+                : getString(R.string.update_state, version));
+        updateBetaChoice.setText(getString(R.string.update_beta_state,
+                getString(Updater.beta(this) ? R.string.on : R.string.off)));
         adbChoice.setText(ViddaTools.adbOn(this)
                 ? getString(R.string.adb_state_on, address.isEmpty() ? "?" : address)
                 : getString(R.string.adb_state, getString(R.string.off)));
