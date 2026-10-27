@@ -15,14 +15,29 @@ android {
         versionName '1.0.0'
     }
 
+    signingConfigs {
+        // The CleanViddaTV release key, only where KEYSTORE names it: the v* tag workflow decodes it from the
+        // repo secrets. Every published APK must carry it, or the next one cannot install over it.
+        def keystore = System.getenv('KEYSTORE')
+        if (keystore) {
+            release {
+                storeFile file(keystore)
+                storeType 'PKCS12'
+                storePassword System.getenv('KEYSTORE_PASSWORD')
+                keyAlias System.getenv('KEY_ALIAS')
+                keyPassword System.getenv('KEY_PASSWORD')
+            }
+        }
+    }
+
     buildTypes {
         release {
             // R8 strips and optimises the code (AndroidX included): smaller APK, faster start on a slow TV CPU.
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // Sideloaded over ADB, never published: sign with the debug key so it installs over a debug build.
-            signingConfig signingConfigs.debug
+            // Local builds (build-and-install.sh) keep the debug key, so they install over a debug build.
+            signingConfig System.getenv('KEYSTORE') ? signingConfigs.release : signingConfigs.debug
         }
     }
 

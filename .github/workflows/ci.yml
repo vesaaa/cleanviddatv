@@ -50,3 +50,64 @@ jobs:
           size=$(stat -c %s launcher/app/build/outputs/apk/release/app-release.apk)
           echo "release APK: $((size / 1024)) KB"
           test "$size" -lt 589824 || { echo "APK is over 576 KB; the launcher targets 1 GB TVs, keep it small"; exit 1; }
+
+  release:
+    name: Signed APK to GitHub Releases
+    needs: [lists-and-tools, launcher]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      # The release key's certificate. An APK signed with anything else cannot upgrade the TVs already running
+      # CleanViddaTV, so a changed or wrong secret stops the release here instead of reaching them.
+      CERT_SHA256: 9422bdc9a4273f0e8b8c3fedd865668f2556086e92dc734931339bf4d994459e
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: The tag matches versionName
+        run: |
+          version=$(sed -n "s/^ *versionName '\(.*\)'$/\1/p" launcher/app/build.gradle)
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "::error::tag $GITHUB_REF_NAME, but build.gradle says versionName $version"; exit 1; }
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        with:
+          packages: platforms;android-34 build-tools;34.0.0
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+      - name: Release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          test -n "$KEYSTORE_BASE64" || { echo "::error::KEYSTORE_BASE64 secret missing"; exit 1; }
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+      - name: Signed release build
+        working-directory: launcher
+        env:
+          KEYSTORE: ${{ runner.temp }}/release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease
+      - name: Remove the keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks"
+      - name: Check the signature
+        run: |
+          apk=launcher/app/build/outputs/apk/release/app-release.apk
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$apk" | tee certs.txt
+          grep -q "SHA-256 digest: $CERT_SHA256$" certs.txt || { echo "::error::APK is not signed with the CleanViddaTV release key"; exit 1; }
+          mkdir dist
+          cp "$apk" "dist/CleanViddaTV-$VERSION.apk"
+          (cd dist && sha256sum "CleanViddaTV-$VERSION.apk" > "CleanViddaTV-$VERSION.apk.sha256")
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A tag with a suffix (v1.1.0-beta1) is a pre-release.
+          case "$GITHUB_REF_NAME" in *-*) pre=--prerelease ;; *) pre= ;; esac
+          gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --title "CleanViddaTV $VERSION" \
+            --verify-tag --generate-notes $pre
