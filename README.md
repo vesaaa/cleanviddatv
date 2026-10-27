@@ -52,20 +52,23 @@ CleanViddaTV 在此基础上做的事：只针对国行海信 / Vidda、开机�
 
 装好以后就不再需要电脑了：以后要用 ADB，在 CleanViddaTV 的设置 → 维护里打开（30 分钟后自动关闭）。
 
-### 第二步：在电脑上运行安装脚本
+### 第二步：下载并运行安装脚本
 
-1. **运行**：
+不用自己编译，也不用装 Java / Android 开发环境：
+
+1. **下载两个文件**：打开 [最新发布页](https://github.com/vesaaa/cleanviddatv/releases/latest)，下载
+   - `CleanViddaTV-<版本>.apk`（已经签好名的桌面）；
+   - 页面最下面的 **Source code (zip)**（安装脚本和停用清单），解压。
+2. **在解压出的文件夹里运行**（把 APK 放进这个文件夹）：
 
    ```bash
-   git clone https://github.com/vesaaa/cleanviddatv
-   cd cleanviddatv
    python3 -m venv tools/venv && tools/venv/bin/pip install -r tools/requirements.txt
-   TV_HOST=<电视的 IP> ./install-vidda.sh
+   APK_FILE=CleanViddaTV-<版本>.apk TV_HOST=<电视的 IP> ./install-vidda.sh
    ```
 
-   默认会在本机用 Gradle 构建桌面（需要 JDK 17 和 Android SDK）。不想装开发环境的话，从 [发布页](https://github.com/vesaaa/cleanviddatv/releases/latest) 下载 `CleanViddaTV-<版本>.apk`，用 `APK_FILE=CleanViddaTV-<版本>.apk TV_HOST=<电视的 IP> ./install-vidda.sh`。发布页的 APK 都用同一把正式密钥签名，以后可以直接在线更新。
+   第一行只在第一次需要，装的是脚本连接电视用的 ADB 库。Windows 请在 Git Bash 里运行，第一行换成 `python -m venv tools/venv && tools/venv/Scripts/pip install -r tools/requirements.txt`。发布页的 APK 都用同一把正式密钥签名，装好后就能在电视上在线更新。
 
-2. **重启一次电视**，确认开机直接进入 CleanViddaTV、Home 键正常。
+3. **重启一次电视**，确认开机直接进入 CleanViddaTV、Home 键正常。
 
 安装脚本会依次：检查型号 → 记录当前状态 → 按清单停用（先备份，并有防止"没有桌面可用"的保护）→ 安装并启动新桌面，确认它成为默认桌面后才停用聚好看 → 开通遥控器按键服务、文件选择器和在线更新所需的权限 → 把恢复所需的记录写到电视上 → **关闭 ADB**。以后需要 ADB 时，在桌面设置里打开。
 
@@ -108,6 +111,7 @@ CleanViddaTV 在此基础上做的事：只针对国行海信 / Vidda、开机�
 ## 开发
 
 - 桌面：`launcher/`，纯 Java，`minSdk` 26。构建：`cd launcher && ./gradlew testReleaseUnitTest lintRelease assembleRelease`。
+- 用自己构建的桌面安装：`git clone` 本仓库后，不带 `APK_FILE` 运行 `TV_HOST=<电视的 IP> ./install-vidda.sh`，它会在本机用 Gradle 构建（需要 JDK 17 和 Android SDK），用调试密钥签名——这样装的桌面不能在线更新成发布版，换成发布版要先恢复原厂桌面再装。
 - 测试：`tools/venv/bin/python -m unittest discover -s tests`（包括用模拟电视测试 `install-vidda.sh`）。
 - 海信相关的配置都在 `launcher/app/src/main/res/values/config.xml`：开机进桌面 `power_on_home_always`、Home 键 `home_key_scancodes`、信号源 `source_panel_service`。
 
