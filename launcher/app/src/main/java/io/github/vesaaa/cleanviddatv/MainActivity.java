@@ -2359,8 +2359,18 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             }
             // In the dock, the last app is the row's end: the empty slots after it take no focus.
             int rowCount = position < COLUMNS ? Math.min(count, adapter.dockFilled()) : count;
-            return GridNavigation.atHorizontalEdge(position, rowCount, COLUMNS,
-                    rtlAppGrid, keyCode == KeyEvent.KEYCODE_DPAD_LEFT);
+            if (GridNavigation.atHorizontalEdge(position, rowCount, COLUMNS, rtlAppGrid,
+                    keyCode == KeyEvent.KEYCODE_DPAD_LEFT)) return true;
+            if (topShelf != null && position < COLUMNS) {
+                // Dock under a top shelf: step to the next tile by position. The focus finder works from the tiles'
+                // laid-out rects while the zoom and the shelf animate; on the TV, back from the shelf, it now and then
+                // passed over the next tile to the one after it.
+                focusTile(forward ? position + 1 : position - 1);
+                grid.playSoundEffect(keyCode == KeyEvent.KEYCODE_DPAD_LEFT
+                        ? SoundEffectConstants.NAVIGATION_LEFT : SoundEffectConstants.NAVIGATION_RIGHT);
+                return true;
+            }
+            return false;
         }
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
             if (position < COLUMNS) {
