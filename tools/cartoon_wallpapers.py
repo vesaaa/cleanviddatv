@@ -205,78 +205,10 @@ def mountains_dawn():
 '''
 
 
-def space_planet():
-    rnd = random.Random(52)
-    dust = "".join(f'<circle cx="{rnd.uniform(0, W):.0f}" cy="{rnd.uniform(0, H):.0f}" r="{rnd.uniform(1, 2.6):.1f}" '
-                   f'fill="{rnd.choice(("#ffffff", "#ffd9f2", "#cfe3ff"))}" opacity="{rnd.uniform(0.4, 1):.2f}"/>'
-                   for _ in range(380))
-    craters = "".join(f'<circle cx="{x}" cy="{y}" r="{r}" fill="#000" opacity="0.12"/>'
-                      for x, y, r in ((-60, -40, 26), (40, 50, 18), (70, -70, 12), (-30, 80, 14)))
-    return f'''
-<defs>
-  <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#0d0a2b"/><stop offset="0.6" stop-color="#1d1450"/><stop offset="1" stop-color="#3a1d63"/>
-  </linearGradient>
-  <radialGradient id="neb1"><stop offset="0" stop-color="#ff5fa2" stop-opacity="0.35"/>
-    <stop offset="1" stop-color="#ff5fa2" stop-opacity="0"/></radialGradient>
-  <radialGradient id="neb2"><stop offset="0" stop-color="#4fb3ff" stop-opacity="0.28"/>
-    <stop offset="1" stop-color="#4fb3ff" stop-opacity="0"/></radialGradient>
-  <linearGradient id="planet" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#ffcf7a"/><stop offset="0.5" stop-color="#ff8a6b"/><stop offset="1" stop-color="#9b3f7a"/>
-  </linearGradient>
-  <linearGradient id="ring" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0" stop-color="#ffe9c2" stop-opacity="0.2"/><stop offset="0.5" stop-color="#ffe9c2"/>
-    <stop offset="1" stop-color="#ffe9c2" stop-opacity="0.3"/>
-  </linearGradient>
-  <linearGradient id="moon" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#9fe6ff"/><stop offset="1" stop-color="#3f6fd1"/>
-  </linearGradient>
-  <linearGradient id="flame" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#fff2a8"/><stop offset="0.5" stop-color="#ffab4a"/><stop offset="1" stop-color="#ff5f6b" stop-opacity="0"/>
-  </linearGradient>
-  <radialGradient id="planetShade" cx="0.3" cy="0.28" r="0.85">
-    <stop offset="0.45" stop-color="#2a0f3a" stop-opacity="0"/><stop offset="1" stop-color="#2a0f3a" stop-opacity="0.6"/>
-  </radialGradient>
-  <clipPath id="planetClip"><circle r="260"/></clipPath>
-</defs>
-<rect width="{W}" height="{H}" fill="url(#sky)"/>
-<ellipse cx="420" cy="300" rx="620" ry="380" fill="url(#neb1)"/>
-<ellipse cx="1600" cy="860" rx="700" ry="420" fill="url(#neb2)"/>
-{dust}
-{sparkle(300, 760, 18)}{sparkle(980, 140, 14)}{sparkle(1780, 200, 12)}{sparkle(720, 520, 10)}
-<g transform="translate(1380,430) rotate(-18)">
-  <path d="M-470,0 A470,110 0 0 1 470,0" fill="none" stroke="url(#ring)" stroke-width="34" opacity="0.8"/>
-  <circle r="260" fill="url(#planet)"/>
-  <g clip-path="url(#planetClip)" opacity="0.25">
-    <rect x="-300" y="-150" width="600" height="38" fill="#fff"/><rect x="-300" y="-40" width="600" height="22" fill="#7a2f6b"/>
-    <rect x="-300" y="60" width="600" height="46" fill="#fff"/><rect x="-300" y="160" width="600" height="20" fill="#7a2f6b"/>
-      </g>
-  <circle r="260" fill="url(#planetShade)"/>
-  <path d="M-470,0 A470,110 0 0 0 470,0" fill="none" stroke="url(#ring)" stroke-width="34"/>
-</g>
-<g transform="translate(420,760)">
-  <circle r="120" fill="url(#moon)"/>{craters}
-</g>
-<circle cx="1750" cy="900" r="38" fill="#ffd27f"/><circle cx="1762" cy="890" r="10" fill="#000" opacity="0.12"/>
-<g transform="translate(860,520) rotate(38)">
-  <path d="M-22,70 Q0,230 22,70 Z" fill="url(#flame)"/>
-  <path d="M-34,40 L-62,90 L-30,80 Z" fill="#ff6b8a"/><path d="M34,40 L62,90 L30,80 Z" fill="#ff6b8a"/>
-  <path d="M0,-110 C46,-70 46,20 32,80 L-32,80 C-46,20 -46,-70 0,-110 Z" fill="#f4f1ff"/>
-  <path d="M0,-110 C22,-92 32,-72 36,-56 L-36,-56 C-32,-72 -22,-92 0,-110 Z" fill="#ff6b8a"/>
-  <circle cy="-10" r="18" fill="#4fb3ff" stroke="#c9c3ef" stroke-width="7"/>
-  <rect x="-8" y="70" width="16" height="16" rx="3" fill="#8d86b8"/>
-</g>
-<g stroke="#ffffff" stroke-linecap="round" opacity="0.35">
-  <line x1="720" y1="700" x2="790" y2="610" stroke-width="3"/><line x1="680" y1="660" x2="740" y2="585" stroke-width="2"/>
-</g>
-'''
-
-
 SCENES = {
     "cartoon-night-cabin": night_cabin,
     "cartoon-beach-sunset": beach_sunset,
     "cartoon-mountains-dawn": mountains_dawn,
-    "cartoon-space-planet": space_planet,
 }
 
 

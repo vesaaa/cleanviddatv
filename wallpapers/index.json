@@ -35,17 +35,6 @@
    "thumb": "thumbs/cartoon-mountains-dawn.webp"
   },
   {
-   "id": "cartoon-space-planet",
-   "title": "卡通 · 太空小火箭",
-   "credit": "CleanViddaTV",
-   "license": "CC0 1.0",
-   "source": "tools/cartoon_wallpapers.py",
-   "file": "files/cartoon-space-planet.webp",
-   "size": 35324,
-   "sha256": "0e8a03dc3378fa91e4fd2a1310b32fd4674f8ecd591f0c7a42c8e95b9b1c48d7",
-   "thumb": "thumbs/cartoon-space-planet.webp"
-  },
-  {
    "id": "sky-pedra",
    "title": "星空 · 巴西 Pedra Azul 上空的银河",
    "credit": "EduardoMSNeves",
@@ -176,17 +165,6 @@
    "size": 120858,
    "sha256": "8f9f5d67d1f956e5cd4c455eb71b6b862ecd137e9d7873c4d499bbe8a9050176",
    "thumb": "thumbs/beach-mangrove.webp"
-  },
-  {
-   "id": "beach-kohmak",
-   "title": "海滩 · 泰国阁曼岛，椰林日落",
-   "credit": "Vyacheslav Argenberg",
-   "license": "CC BY 4.0",
-   "source": "https://commons.wikimedia.org/wiki/File:Koh_Mak_(island),_Thailand,_Sunset_on_the_beach_with_palms.jpg",
-   "file": "files/beach-kohmak.webp",
-   "size": 77422,
-   "sha256": "563186854bba9d8c38962bab0f8d5adb6a0e48cabe6d480c3457091662929d9d",
-   "thumb": "thumbs/beach-kohmak.webp"
   },
   {
    "id": "nc-loch-tummel",
