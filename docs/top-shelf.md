@@ -111,6 +111,6 @@ context.contentResolver.notifyChange(Uri.parse("content://$authority/items"), nu
 - 程序坞里的应用获得焦点时，如果它有 shelf provider 且返回了卡片，大图区换成卡片行（标题为「应用名 · shelf 标题」）；
   没有 provider、查询失败或返回 0 行时保持原来的大字应用名。
 - 结果缓存 30 秒；回到桌面、装卸应用后重新查询；显示期间注册 ContentObserver，并在最早的 `end_ms` 后 5 秒自动重新查询。
-- 上键从程序坞进入卡片行，左右选择，确认打开，下键或返回键回到程序坞；按住左右键在两端停住。
+- 上键从程序坞进入卡片行，左右选择，确认打开，下键或返回键回到程序坞，卡片行再按上键到顶栏最近的按钮；按住左右键在两端停住。
 - 只显示 provider 自己的 `content://<authority>/image/` 图片，单张最多读 1 MB，缩到 512 像素以内。
 - 打开卡片时，Intent 的包名强制设为 provider 所在的应用，去掉 selector、ClipData 和所有 URI 授权标志。

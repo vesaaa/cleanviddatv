@@ -492,7 +492,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // still follows the dock.
         if (!cfg.dockTitle) hero.setVisibility(View.GONE);
         if (cfg.topShelf && cfg.dockTitle && dockRow) {
-            topShelf = new TopShelf(this, root, hero, () -> focusTile(lastFocused));
+            topShelf = new TopShelf(this, root, hero, new TopShelf.Host() {
+                @Override
+                public void returnToDock() {
+                    focusTile(lastFocused);
+                }
+
+                @Override
+                public void focusTopBar(View from) {
+                    MainActivity.this.focusTopBar(from);
+                }
+            });
         }
         greeting = findViewById(R.id.greeting);
         clockBlock = findViewById(R.id.leftBlock);
@@ -2402,6 +2412,32 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     /** The first top-bar button after Inputs that is shown, in bar order (top_bar_apps, the network pill, ...); Settings is always there. */
+    /**
+     * Up from the top shelf's row: the top-bar button nearest above the card, as Up from a dock tile reaches one. The
+     * focus finder does not get there from the row on the TV, so it is done by hand.
+     */
+    private void focusTopBar(View from) {
+        List<View> buttons = new ArrayList<>();
+        buttons.add(btnInputs);
+        ViewGroup bar = findViewById(R.id.topButtons);
+        for (int i = 0; i < bar.getChildCount(); i++) buttons.add(bar.getChildAt(i));
+        int[] at = new int[2];
+        from.getLocationInWindow(at);
+        float x = at[0] + from.getWidth() / 2f;
+        View best = null;
+        float bestDistance = Float.MAX_VALUE;
+        for (View b : buttons) {
+            if (b == null || b.getVisibility() != View.VISIBLE || !b.isFocusable()) continue;
+            b.getLocationInWindow(at);
+            float distance = Math.abs(at[0] + b.getWidth() / 2f - x);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = b;
+            }
+        }
+        if (best != null) best.requestFocus();
+    }
+
     private View firstTopButton() {
         ViewGroup bar = findViewById(R.id.topButtons);
         for (int i = 0; i < bar.getChildCount(); i++) {

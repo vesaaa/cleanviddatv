@@ -40,7 +40,7 @@ import java.util.concurrent.Executors;
 /**
  * The top shelf's card row (config.xml top_shelf, docs/top-shelf.md): when a dock app that publishes a shelf has
  * focus, its cards (VsTV: channels, what is on and how far in) take the hero's place above the dock. Up from the dock
- * walks into the row, OK opens a card, Down or Back returns to the dock. An app with no shelf, or an empty one, keeps
+ * walks into the row, OK opens a card, Down or Back returns to the dock, Up goes on to the top bar. An app with no shelf, or an empty one, keeps
  * the plain hero.
  */
 final class TopShelf {
@@ -48,6 +48,9 @@ final class TopShelf {
     interface Host {
         /** Focus back on the dock tile the shelf belongs to. */
         void returnToDock();
+
+        /** Up from a card: the top bar's nearest button. */
+        void focusTopBar(View from);
     }
 
     private static final int CARD_W_DP = 224, CARD_H_DP = 126;
@@ -479,6 +482,9 @@ final class TopShelf {
             case KeyEvent.KEYCODE_ESCAPE:
                 if (!down && keyCode != KeyEvent.KEYCODE_DPAD_DOWN) host.returnToDock();
                 if (down && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) host.returnToDock();
+                return true;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                if (down) host.focusTopBar(v);
                 return true;
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 return down && row.indexOfChild(v) == 0;            // the row's start: stay
