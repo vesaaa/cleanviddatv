@@ -410,9 +410,11 @@
     <string-array name="library_apps" translatable="false">
     </string-array>
 
-    <!-- Module cards: an app that declares a card (docs/specs/card.md) can stand in for its tile with its own
-         label, caption and glow colour, once you answer Show on the prompt. false: never look for cards or ask. -->
-    <bool name="module_cards">true</bool>
+    <!-- Module cards: an app that declares a card can stand in for its tile with its own label, caption and glow
+         colour, once you answer Show on the prompt. false: never look for cards or ask, and no 模块卡片 in the settings
+         menu. Off in CleanViddaTV: no app on these TVs declares one; the top shelf (top_shelf) is how apps show
+         content on Home here. A theme can still set "module_cards": true. -->
+    <bool name="module_cards">false</bool>
 
     <!-- Reduced motion: for TVs whose GPU cannot keep up (MediaTek MT5895 on Android 10 is the known case).
          true keeps the GPU drawing path but calms the movement and draws far fewer frames: the highlight
