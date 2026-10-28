@@ -218,7 +218,6 @@
     <string name="wallpaper_section_online_done">在线壁纸（已全部下载）</string>
     <string name="wallpaper_section_more">其他</string>
     <string name="wallpaper_downloaded_rotate">已下载（每小时轮换）</string>
-    <string name="wallpaper_download_hint">按确认键下载</string>
     <string name="wallpaper_downloading">下载中 %1$d%%</string>
     <string name="wallpaper_download_failed">下载失败：%1$s</string>
     <string name="wallpaper_delete_title">删除这张壁纸？</string>

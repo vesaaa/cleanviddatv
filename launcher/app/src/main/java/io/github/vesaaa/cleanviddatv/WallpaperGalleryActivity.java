@@ -138,7 +138,6 @@ public class WallpaperGalleryActivity extends Activity {
             for (OnlineWallpapers.Item item : online.items) {
                 if (new File(OnlineWallpapers.dir(this), item.fileName()).isFile()) continue;
                 Row r = new Row(TILE, item.title, null, null, item);
-                r.status = getString(R.string.wallpaper_download_hint);
                 offered.add(r);
             }
         }
@@ -271,7 +270,7 @@ public class WallpaperGalleryActivity extends Activity {
     }
 
     private void download(Row r) {
-        if (r.status != null && !r.status.equals(getString(R.string.wallpaper_download_hint))) return;   // running
+        if (r.status != null) return;   // running
         r.status = getString(R.string.wallpaper_downloading, 0);
         adapter.notifyItemChanged(rows.indexOf(r));
         OnlineWallpapers.Index index = online;
@@ -293,7 +292,7 @@ public class WallpaperGalleryActivity extends Activity {
             runOnUiThread(() -> {
                 if (isDestroyed()) return;
                 if (failure != null) {
-                    r.status = getString(R.string.wallpaper_download_hint);
+                    r.status = null;
                     adapter.notifyItemChanged(rows.indexOf(r));
                     Toast.makeText(this, getString(R.string.wallpaper_download_failed, failure), Toast.LENGTH_LONG).show();
                     return;
