@@ -30,7 +30,7 @@ import java.util.Set;
  * glow. Every minute the clock drifts to a new spot and the glow shifts colour, so nothing burns in.
  * Shared by ClockDream (the system screensaver) and ClockActivity (Home left idle).
  */
-final class ClockScene {
+final class ClockScene implements Screensaver {
 
     private static final long MOVE_MS = 60_000L;
     /** The glow's colour change: 16 steps over 8 s. Animated per frame it redrew the full-screen gradient ~480 times. */
@@ -85,7 +85,8 @@ final class ClockScene {
         setGlow(PALETTE[colorIndex]);
     }
 
-    void start() {
+    @Override
+    public void start() {
         content.setAlpha(0f);
         content.post(() -> {
             placeClock();
@@ -96,7 +97,8 @@ final class ClockScene {
         if (wallpaperFile != null && !wallpaperShown) loadWallpaper();
     }
 
-    void stop() {
+    @Override
+    public void stop() {
         handler.removeCallbacksAndMessages(null);   // the tick and any glow steps still queued
         content.animate().cancel();
         wallpaperGeneration++;   // a decode still running must not attach its picture to a stopped scene
@@ -174,7 +176,7 @@ final class ClockScene {
     }
 
     /** WallpaperPlayer's decode: sampled and scaled down to cover the screen, never bigger than 4K. */
-    private static Bitmap decode(File file, int screenW, int screenH) {
+    static Bitmap decode(File file, int screenW, int screenH) {
         try {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;

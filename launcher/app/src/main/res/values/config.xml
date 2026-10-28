@@ -440,6 +440,15 @@
          plain colour, like the tvOS home screen. Drawn from gradients, no picture in memory. CleanViddaTV: on.
          Can also be set with "soft_backdrop": false in a theme's config.json. -->
     <bool name="soft_backdrop">true</bool>
+
+    <!-- tvOS parallax: the focused tile arrives tipped towards the key that moved focus, springs flat and then sways
+         slowly, its picture moving against the tilt and the highlight's sheen with it (TileParallax). Needs advanced
+         effects and no reduced_motion. Launcher settings can switch it; a theme can set "parallax_tiles". -->
+    <bool name="parallax_tiles">true</bool>
+
+    <!-- A short tick on every focus move between tiles and a soft click on OK. Off by default; Launcher settings can
+         switch it, and a theme can set "focus_sound". -->
+    <bool name="focus_sound">false</bool>
     <!-- With no wallpaper from a theme, the pictures bundled with the launcher (assets/wallpapers): six landscape photos,
          a new one every hour under a light shade, and three fields of soft light to pick from Launcher settings > Wallpaper.
          CleanViddaTV: on. A theme can set "builtin_wallpapers": false, and "wallpaper": false shows none at all. -->
@@ -484,7 +493,13 @@
          Unlike the system screensaver this never starts over live TV or an app, which matters on TVs whose
          Live TV window does not keep the screen on (CVTE): there the system screensaver would start in the
          middle of a programme. Can also be set with "home_idle_clock_minutes": 10 in a theme's config.json. -->
-    <integer name="home_idle_clock_minutes">0</integer>
+    <integer name="home_idle_clock_minutes">10</integer>
+
+    <!-- What that screensaver shows: "photos" (the wallpaper pictures, including the ones downloaded in the wallpaper
+         gallery, crossfading and slowly panning, with a small clock and the picture's caption) or "clock" (the thin
+         clock drifting over a glow or the wallpaper). Launcher settings can choose it; a theme can set
+         "screensaver_style". -->
+    <string name="screensaver_style" translatable="false">photos</string>
     <!-- The clock screensaver (Home idle clock and the system screensaver) over Home's wallpaper instead of black with
          a coloured glow. The clock still moves every minute. Can also be set with "clock_wallpaper" in a theme. -->
     <bool name="clock_wallpaper">false</bool>

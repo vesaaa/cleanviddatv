@@ -18,16 +18,17 @@ public class ClockActivity extends Activity {
     }
 
 
-    private ClockScene scene;
+    private Screensaver scene;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dream_clock);
+        scene = Screensaver.create(this, layout -> {
+            setContentView(layout);
+            return getWindow().getDecorView();
+        });
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE);
-        scene = new ClockScene(getWindow().getDecorView());
-        scene.useHomeWallpaper(this);
     }
 
     @Override

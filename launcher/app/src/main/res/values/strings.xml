@@ -22,6 +22,14 @@
     <string name="animations_state">动态效果：%1$s</string>
     <string name="advanced_effects">高级动态效果</string>
     <string name="advanced_effects_state">高级动态效果：%1$s</string>
+    <string name="parallax_state">视差效果：%1$s</string>
+    <string name="focus_sound_state">按键音效：%1$s</string>
+    <string name="screensaver_state">屏保：%1$s</string>
+    <string name="screensaver_after">闲置 %1$d 分钟后</string>
+    <string name="screensaver_style_state">屏保内容：%1$s</string>
+    <string name="screensaver_photos">风景照片</string>
+    <string name="screensaver_clock">时钟</string>
+    <string name="screensaver_hint">屏保只在桌面闲置时出现，看电视、用应用时不会打开。风景照片包括内置照片和在壁纸页下载的在线壁纸。</string>
     <string name="open_on_start_label">开机时打开</string>
     <string name="open_on_start_state">开机时打开：%1$s</string>
     <string name="advanced_effects_warning">增加卡片上浮、图标缩放和背景颜色平滑过渡；可能增加内存占用，实际变化取决于电视。</string>

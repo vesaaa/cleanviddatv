@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Photo screensaver (PhotoScene): pictures crossfading and slowly panning, a small clock and the picture's name. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF000000">
+
+    <ImageView
+        android:id="@+id/photoBack"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:alpha="0"
+        android:importantForAccessibility="no" />
+
+    <ImageView
+        android:id="@+id/photoFront"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:alpha="0"
+        android:importantForAccessibility="no" />
+
+    <!-- Darkens the corners the text sits in, so it stays readable on a bright sky. -->
+    <View
+        android:id="@+id/photoScrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/photo_dream_scrim"
+        android:importantForAccessibility="no" />
+
+    <LinearLayout
+        android:id="@+id/photoClock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="64dp"
+        android:gravity="end"
+        android:orientation="vertical">
+
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format12Hour="h:mm"
+            android:format24Hour="HH:mm"
+            android:textColor="#F2FFFFFF"
+            android:textSize="44sp"
+            android:fontFamily="@string/font_light"
+            android:shadowColor="#99000000"
+            android:shadowRadius="8"
+            android:includeFontPadding="false" />
+
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:format12Hour="@string/date_format"
+            android:format24Hour="@string/date_format"
+            android:textColor="#BFFFFFFF"
+            android:textSize="15sp"
+            android:fontFamily="@string/font_regular"
+            android:shadowColor="#99000000"
+            android:shadowRadius="6"
+            android:letterSpacing="0.08" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/photoCaption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="64dp"
+        android:layout_marginBottom="48dp"
+        android:maxWidth="720dp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:alpha="0"
+        android:textColor="#E6FFFFFF"
+        android:textSize="20sp"
+        android:fontFamily="@string/font_regular"
+        android:shadowColor="#CC000000"
+        android:shadowRadius="8" />
+</FrameLayout>

@@ -40,6 +40,11 @@ public final class LauncherSettingsActivity extends Activity {
     private TextView openOnStartChoice;
     private TextView adbChoice;
     private TextView updateChoice, updateBetaChoice;
+    private TextView parallaxChoice, focusSoundChoice, screensaverChoice, screensaverStyleChoice;
+    private boolean parallax, focusSound;
+    private int screensaverMinutes;
+    private String screensaverStyle;
+    private static final int[] SCREENSAVER_MINUTES = {0, 5, 10, 15, 30, 60};
     /** An update check or download is running: further presses wait for it. */
     private boolean updateBusy;
     private int columns;
@@ -135,6 +140,33 @@ public final class LauncherSettingsActivity extends Activity {
                         .show();
             }
         });
+        parallax = config.parallaxTiles;
+        focusSound = config.focusSound;
+        screensaverMinutes = config.homeIdleClockMinutes;
+        screensaverStyle = config.screensaverStyle;
+        parallaxChoice = findViewById(R.id.parallaxChoice);
+        parallaxChoice.setOnClickListener(v -> {
+            parallax = !parallax;
+            choices.edit().putBoolean(Config.PARALLAX_KEY, parallax).apply();
+            changed();
+            refresh();
+        });
+        focusSoundChoice = findViewById(R.id.focusSoundChoice);
+        focusSoundChoice.setOnClickListener(v -> {
+            focusSound = !focusSound;
+            choices.edit().putBoolean(Config.FOCUS_SOUND_KEY, focusSound).apply();
+            changed();
+            refresh();
+        });
+        screensaverChoice = findViewById(R.id.screensaverChoice);
+        screensaverChoice.setOnClickListener(v -> showScreensaverPicker());
+        screensaverStyleChoice = findViewById(R.id.screensaverStyleChoice);
+        screensaverStyleChoice.setOnClickListener(v -> {
+            screensaverStyle = Config.SCREENSAVER_PHOTOS.equals(screensaverStyle)
+                    ? Config.SCREENSAVER_CLOCK : Config.SCREENSAVER_PHOTOS;
+            choices.edit().putString(Config.SCREENSAVER_STYLE_KEY, screensaverStyle).apply();
+            refresh();
+        });
         openOnStartChoice = findViewById(R.id.openOnStartChoice);
         if (config.openOnStartChoice) {
             openOnStartChoice.setVisibility(View.VISIBLE);
@@ -145,13 +177,19 @@ public final class LauncherSettingsActivity extends Activity {
             if (!hasOnTvChoices()) return;
             choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
                     .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
-                    .remove(Config.DOCK_OPACITY_KEY).remove(OpenOnStart.KEY).commit();
+                    .remove(Config.DOCK_OPACITY_KEY).remove(OpenOnStart.KEY).remove(Config.PARALLAX_KEY)
+                    .remove(Config.FOCUS_SOUND_KEY).remove(Config.SCREENSAVER_MINUTES_KEY)
+                    .remove(Config.SCREENSAVER_STYLE_KEY).commit();
             Config current = Config.load(this);
             columns = current.columns;
             rowsBelowDock = current.rowsBelowDock;
             dockOpacity = current.dockOpacity;
             animations = current.animations;
             advancedEffects = current.animations && current.advancedEffects;
+            parallax = current.parallaxTiles;
+            focusSound = current.focusSound;
+            screensaverMinutes = current.homeIdleClockMinutes;
+            screensaverStyle = current.screensaverStyle;
             changed();
             refresh();
         });
@@ -290,6 +328,31 @@ public final class LauncherSettingsActivity extends Activity {
                 .show();
     }
 
+    /** Off, then the idle times; saved at once, Home picks it up when it comes back. */
+    private void showScreensaverPicker() {
+        String[] labels = new String[SCREENSAVER_MINUTES.length];
+        int checked = -1;
+        for (int i = 0; i < labels.length; i++) {
+            labels[i] = screensaverLabel(SCREENSAVER_MINUTES[i]);
+            if (SCREENSAVER_MINUTES[i] == screensaverMinutes) checked = i;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(getString(R.string.screensaver_state, "").replace("：", ""))
+                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                    dialog.dismiss();
+                    screensaverMinutes = SCREENSAVER_MINUTES[which];
+                    choices.edit().putInt(Config.SCREENSAVER_MINUTES_KEY, screensaverMinutes).apply();
+                    changed();
+                    refresh();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private String screensaverLabel(int minutes) {
+        return minutes <= 0 ? getString(R.string.off) : getString(R.string.screensaver_after, minutes);
+    }
+
     /** Off, then every app with a TV entry point by name. Saved at once; it is read on the next boot. */
     private void showOpenOnStartPicker() {
         PackageManager pm = getPackageManager();
@@ -371,6 +434,18 @@ public final class LauncherSettingsActivity extends Activity {
                 getString(advancedEffects ? R.string.on : R.string.off)));
         advancedChoice.setEnabled(animations);
         advancedChoice.setAlpha(animations ? 1f : 0.5f);
+        // Parallax needs the advanced effects, like the rest of the tvOS motion.
+        parallaxChoice.setText(getString(R.string.parallax_state,
+                getString(parallax && advancedEffects ? R.string.on : R.string.off)));
+        parallaxChoice.setEnabled(advancedEffects);
+        parallaxChoice.setAlpha(advancedEffects ? 1f : 0.5f);
+        focusSoundChoice.setText(getString(R.string.focus_sound_state,
+                getString(focusSound ? R.string.on : R.string.off)));
+        screensaverChoice.setText(getString(R.string.screensaver_state, screensaverLabel(screensaverMinutes)));
+        screensaverStyleChoice.setText(getString(R.string.screensaver_style_state, getString(
+                Config.SCREENSAVER_CLOCK.equals(screensaverStyle) ? R.string.screensaver_clock : R.string.screensaver_photos)));
+        screensaverStyleChoice.setEnabled(screensaverMinutes > 0);
+        screensaverStyleChoice.setAlpha(screensaverMinutes > 0 ? 1f : 0.5f);
         String wallpaperCurrent = choices.getString(Config.WALLPAPER_CHOICE_KEY, null);
         wallpaperChoice.setText(getString(R.string.wallpaper_state, wallpaperLabel(wallpaperCurrent)));
         openOnStartChoice.setText(getString(R.string.open_on_start_state, openOnStartLabel()));
@@ -462,7 +537,9 @@ public final class LauncherSettingsActivity extends Activity {
         return choices.contains("columns") || choices.contains(Config.ROWS_BELOW_DOCK_KEY)
                 || choices.contains("animations") || choices.contains("advanced_effects")
                 || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
-                || choices.contains(OpenOnStart.KEY);
+                || choices.contains(OpenOnStart.KEY) || choices.contains(Config.PARALLAX_KEY)
+                || choices.contains(Config.FOCUS_SOUND_KEY) || choices.contains(Config.SCREENSAVER_MINUTES_KEY)
+                || choices.contains(Config.SCREENSAVER_STYLE_KEY);
     }
 
     private void open(Intent intent) {

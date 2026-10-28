@@ -122,6 +122,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** Idle time on Home before ClockActivity; 0 is off (config.xml, home_idle_clock_minutes). */
     private long idleClockMs;
     private final Runnable showIdleClock = () -> startActivity(new Intent(this, ClockActivity.class));
+    /**
+     * Grid scrolls on a focus move: one ease-out of fixed length, close to the highlight's critically damped spring,
+     * so the row and the glass arrive together instead of the row trailing on RecyclerView's distance-based curve.
+     */
+    private static final android.view.animation.Interpolator SCROLL_EASE = new android.view.animation.DecelerateInterpolator(1.8f);
+    private static final int SCROLL_MS = 280;
+    /** config.xml focus_sound: the tick on a focus move and the click on OK; null when off. */
+    private FocusSound focusSound;
     private String liveTvAction;
     private String liveTvInputId;
     /** The app library is on (config.xml, app_library): only then can the tile menu take an app off Home. */
@@ -428,6 +436,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         festive = festival.active(LocalDate.now());
         liveTvPkg = cfg.liveTvPackage;
         idleClockMs = cfg.homeIdleClockMinutes * MINUTE_MS;
+        focusSound = cfg.focusSound ? new FocusSound(this) : null;
         bootToLiveTv = cfg.bootToLiveTv;
         openOnStartChoice = cfg.openOnStartChoice;
         liveTvAction = cfg.liveTvAction;
@@ -570,7 +579,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     else dx = 0;
                     if (dx == 0) return false;
                     if (immediate || reducedMotion || !animations) parent.scrollBy(dx, 0);
-                    else parent.smoothScrollBy(dx, 0);
+                    else parent.smoothScrollBy(dx, 0, SCROLL_EASE, SCROLL_MS);
                     return true;
                 }
                 if (dockRow && getPosition(child) < COLUMNS) return false;
@@ -586,7 +595,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 else dy = Math.min(top, bottom - limitBottom);
                 if (dy == 0) return false;
                 if (immediate || reducedMotion || !animations) parent.scrollBy(0, dy);
-                else parent.smoothScrollBy(0, dy);
+                else parent.smoothScrollBy(0, dy, SCROLL_EASE, SCROLL_MS);
                 return true;
             }
         });
@@ -1255,6 +1264,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     protected void onDestroy() {
         super.onDestroy();
         alive--;
+        if (focusSound != null) focusSound.release();
         if (BuiltinWallpapers.onCopied == wallpapersCopied) BuiltinWallpapers.onCopied = null;
         unregisterReceiver(packageReceiver);
         wallpaperPlayer.close();
@@ -1666,6 +1676,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     @Override
     public void onTileFocused(int position, View card) {
+        // A move to another tile ticks; the refits and the focus restored on return call this for the same tile.
+        if (focusSound != null && position != lastFocused && card.getWidth() > 0) focusSound.tick();
         lastFocused = position;
         lastFocusedKey = adapter.keyAt(position);
         // Focus restored before the first layout (cold start): the tile has no size yet, and the glass
@@ -1734,7 +1746,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             boolean scroll = !singleRow && Math.abs(dy) > (int) (8 * density);
             if (scroll) {
                 if (!animations || reducedMotion) grid.scrollBy(0, dy);
-                else grid.smoothScrollBy(0, dy);
+                else grid.smoothScrollBy(0, dy, SCROLL_EASE, SCROLL_MS);
             }
             showHero(position, scroll ? r.top - dy : r.top);
         } else {
@@ -1745,6 +1757,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             revealRect.set(0, -(int) pad * 2, item.getWidth(), item.getHeight() + (int) pad);
             grid.requestChildRectangleOnScreen(item, revealRect, reducedMotion);
         }
+    }
+
+    @Override
+    public void onTileClick() {
+        if (focusSound != null) focusSound.click();
+    }
+
+    @Override
+    public void onTileTilt(float x, float y) {
+        glass.setSheenShift(x, y);
     }
 
     /** Refits the glass to the focused holder once the grid layout and tile dimensions settle. */

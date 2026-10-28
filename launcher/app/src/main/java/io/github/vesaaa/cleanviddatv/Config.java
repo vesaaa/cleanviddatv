@@ -42,6 +42,10 @@ final class Config {
     static final String SETTINGS_NAME = "launcher_settings";
     static final String ROWS_BELOW_DOCK_KEY = "rows_below_dock";
     static final String WALLPAPER_CHOICE_KEY = "wallpaper_choice";
+    /** Launcher settings choices (视差效果, 按键音效, 屏保); a theme push or reset clears them with the others. */
+    static final String PARALLAX_KEY = "parallax_tiles", FOCUS_SOUND_KEY = "focus_sound";
+    static final String SCREENSAVER_MINUTES_KEY = "screensaver_minutes", SCREENSAVER_STYLE_KEY = "screensaver_style";
+    static final String SCREENSAVER_PHOTOS = "photos", SCREENSAVER_CLOCK = "clock";
     static final String DOCK_OPACITY_KEY = "dock_opacity";
     /**
      * Counts the changes made in Launcher settings. Home remembers the count it was built with and rebuilds on
@@ -153,6 +157,12 @@ final class Config {
     final int skyIntensity;
     /** Soft pools of coloured light over the background colour when no wallpaper shows (config.xml soft_backdrop). */
     final boolean softBackdrop;
+    /** The focused tile tilts and sways like tvOS's (config.xml parallax_tiles; Launcher settings 视差效果). */
+    final boolean parallaxTiles;
+    /** A short tick on each focus move and a click on OK (config.xml focus_sound; Launcher settings 按键音效). */
+    final boolean focusSound;
+    /** The idle screensaver: SCREENSAVER_PHOTOS (pictures, slowly panned, with a small clock) or SCREENSAVER_CLOCK. */
+    final String screensaverStyle;
     /** Remote keycodes that open Settings through HomeKeyService (config.xml, settings_key_keycodes). */
     final int[] settingsKeycodes;
     /** Extra keycodes that open the input switcher in InputKeyService (config.xml input_key_keycodes). */
@@ -274,7 +284,8 @@ final class Config {
                    List<RaceWeekend.Race> raceCalendar, boolean cinematicHome, boolean ambientGlow, boolean appGlow, boolean fadeRows, int homeIdleClockMinutes,
                    boolean keyFilter, boolean dockGlass, String glowStyle, boolean wallpaperCaptions,
                    boolean handleViewInputs, boolean tileMenu, boolean dockEvenPadding, boolean dockBand, boolean cinematicDots, boolean cinematicWhiteFocus, boolean wifiStatusColor, int cinematicScrim, int cinematicArt,
-                   Map<String, Set<String>> wallpaperMoods, boolean gamepadPassthrough, boolean consumeVolumeKeys, boolean powerOnHome, boolean homeLongPressHome, boolean wifiStatusWarnings, List<String> topBarApps, boolean showGreeting, boolean headerWhite, boolean clockWallpaper, int clockWallpaperDim, boolean clockGlow, String glassStyle, boolean singleRow, boolean dockBandAll, boolean lunarDate, int lunarUtcOffset, boolean dateBelowClock, boolean vpnPill, String locale, boolean powerOnHomeAlways, boolean inputsConnectedOnly, boolean softBackdrop) {
+                   Map<String, Set<String>> wallpaperMoods, boolean gamepadPassthrough, boolean consumeVolumeKeys, boolean powerOnHome, boolean homeLongPressHome, boolean wifiStatusWarnings, List<String> topBarApps, boolean showGreeting, boolean headerWhite, boolean clockWallpaper, int clockWallpaperDim, boolean clockGlow, String glassStyle, boolean singleRow, boolean dockBandAll, boolean lunarDate, int lunarUtcOffset, boolean dateBelowClock, boolean vpnPill, String locale, boolean powerOnHomeAlways, boolean inputsConnectedOnly, boolean softBackdrop,
+                   boolean parallaxTiles, boolean focusSound, String screensaverStyle) {
         this.handleViewInputs = handleViewInputs;
         this.tileMenu = tileMenu;
         this.inputKeycodes = inputKeycodes;
@@ -338,6 +349,9 @@ final class Config {
         this.backgroundColor = backgroundColor;
         this.skyIntensity = skyIntensity;
         this.softBackdrop = softBackdrop;
+        this.parallaxTiles = parallaxTiles;
+        this.focusSound = focusSound;
+        this.screensaverStyle = screensaverStyle;
         this.settingsKeycodes = settingsKeycodes;
         this.settingsKeyPanel = settingsKeyPanel;
         this.restoreKeyServices = restoreKeyServices;
@@ -462,6 +476,9 @@ final class Config {
         int background = 0xFF000000;
         int skyIntensity = res.getInteger(R.integer.sky_intensity);
         boolean softBackdrop = res.getBoolean(R.bool.soft_backdrop);
+        boolean parallaxTiles = res.getBoolean(R.bool.parallax_tiles);
+        boolean focusSound = res.getBoolean(R.bool.focus_sound);
+        String screensaverStyle = res.getString(R.string.screensaver_style);
         int[] settingsKeycodes = res.getIntArray(R.array.settings_key_keycodes);
         boolean settingsKeyPanel = res.getBoolean(R.bool.settings_key_panel);
         boolean restoreKeyServices = res.getBoolean(R.bool.restore_key_services);
@@ -568,6 +585,9 @@ final class Config {
             background = color(json, "background_color", background);
             skyIntensity = integer(json, "sky_intensity", skyIntensity, 0, 100);
             softBackdrop = bool(json, "soft_backdrop", softBackdrop);
+            parallaxTiles = bool(json, "parallax_tiles", parallaxTiles);
+            focusSound = bool(json, "focus_sound", focusSound);
+            screensaverStyle = string(json, "screensaver_style", screensaverStyle);
             settingsKeycodes = intArray(json, "settings_key_keycodes", settingsKeycodes);
             settingsKeyPanel = bool(json, "settings_key_panel", settingsKeyPanel);
             restoreKeyServices = bool(json, "restore_key_services", restoreKeyServices);
@@ -625,6 +645,11 @@ final class Config {
         if (chosenRows >= 0 && chosenRows <= 3) rowsBelow = chosenRows;
         animations = choices.getBoolean("animations", animations);
         advancedEffects = choices.getBoolean("advanced_effects", advancedEffects);
+        parallaxTiles = choices.getBoolean(PARALLAX_KEY, parallaxTiles);
+        focusSound = choices.getBoolean(FOCUS_SOUND_KEY, focusSound);
+        idleClockMinutes = choices.getInt(SCREENSAVER_MINUTES_KEY, idleClockMinutes);
+        screensaverStyle = choices.getString(SCREENSAVER_STYLE_KEY, screensaverStyle);
+        if (!SCREENSAVER_CLOCK.equals(screensaverStyle)) screensaverStyle = SCREENSAVER_PHOTOS;
         File wallpaper = dir != null ? new File(dir, WALLPAPER_NAME) : null;
         if (wallpaper != null && !(wallpaper.isFile() && wallpaper.length() > 0)) wallpaper = null;
         // A theme can also switch the wallpaper off while the file is still there.
@@ -694,7 +719,8 @@ final class Config {
                 dockBand, cinematicDots, cinematicWhiteFocus, wifiStatusColor, cinematicScrim, cinematicArt, wallpaperMoods, gamepadPassthrough,
                 consumeVolumeKeys, powerOnHome, homeLongPressHome, wifiStatusWarnings, topBarApps, showGreeting, headerWhite, clockWallpaper,
                 Math.max(0, Math.min(90, clockWallpaperDim)), clockGlow, glassStyle, singleRow && dockRow, dockBandAll, lunar, lunarOffset,
-                dateBelowClock, vpnPill, locale, powerOnHomeAlways, inputsConnectedOnly, softBackdrop);
+                dateBelowClock, vpnPill, locale, powerOnHomeAlways, inputsConnectedOnly, softBackdrop,
+                parallaxTiles, focusSound, screensaverStyle);
     }
 
     /**
@@ -738,11 +764,14 @@ final class Config {
             SharedPreferences.Editor editor = choices.edit();
             if (!"absent".equals(token)) editor.remove("columns").remove("animations")
                     .remove("advanced_effects").remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY)
-                    .remove(DOCK_OPACITY_KEY);
+                    .remove(DOCK_OPACITY_KEY).remove(PARALLAX_KEY).remove(FOCUS_SOUND_KEY)
+                    .remove(SCREENSAVER_MINUTES_KEY).remove(SCREENSAVER_STYLE_KEY);
             editor.putString(THEME_SIGNATURE_KEY, signature).commit();
         } else if (!seen.equals(signature)) {
             choices.edit().remove("columns").remove("animations").remove("advanced_effects")
                     .remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY).remove(DOCK_OPACITY_KEY)
+                    .remove(PARALLAX_KEY).remove(FOCUS_SOUND_KEY).remove(SCREENSAVER_MINUTES_KEY)
+                    .remove(SCREENSAVER_STYLE_KEY)
                     .putString(THEME_SIGNATURE_KEY, signature).commit();
         }
     }

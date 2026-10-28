@@ -3,6 +3,7 @@ package io.github.vesaaa.cleanviddatv;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -32,6 +33,9 @@ public class GlassView extends View {
     /** glass_style lift (tvOS): no rim and no glow, only a light sheen falling across the tile from its top left. */
     private boolean lift;
     private final Paint sheen = new Paint(Paint.ANTI_ALIAS_FLAG);
+    /** glass_style lift: the sheen's shift with the focused tile's parallax tilt (TileParallax). */
+    private final Matrix sheenShift = new Matrix();
+    private float shiftX, shiftY;
 
     public GlassView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -73,6 +77,19 @@ public class GlassView extends View {
         invalidate();
     }
 
+    /**
+     * Moves the lift sheen with the tile's parallax tilt, -1..1 on each axis: the light slides across the glass the
+     * way it does on a tilted tvOS icon. Other styles keep their light where it is.
+     */
+    void setSheenShift(float x, float y) {
+        if (!lift || (x == shiftX && y == shiftY)) return;
+        shiftX = x;
+        shiftY = y;
+        sheenShift.setTranslate(x * getWidth() * 0.25f, y * getHeight() * 0.25f);
+        if (sheen.getShader() != null) sheen.getShader().setLocalMatrix(sheenShift);
+        invalidate();
+    }
+
     void setRadius(float px) {
         radius = px;
         invalidate();
@@ -85,6 +102,8 @@ public class GlassView extends View {
         specular.setShader(new LinearGradient(0, 0, 0, h * 0.45f, 0x66FFFFFF, 0x00FFFFFF, Shader.TileMode.CLAMP));
         sheen.setShader(new LinearGradient(0, 0, w * 0.6f, h, new int[]{0x38FFFFFF, 0x0DFFFFFF, 0x00FFFFFF},
                 new float[]{0f, 0.45f, 1f}, Shader.TileMode.CLAMP));
+        sheenShift.setTranslate(shiftX * w * 0.25f, shiftY * h * 0.25f);
+        sheen.getShader().setLocalMatrix(sheenShift);
     }
 
     @Override
