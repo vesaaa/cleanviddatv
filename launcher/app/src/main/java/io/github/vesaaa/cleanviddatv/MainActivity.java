@@ -132,6 +132,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private FocusSound focusSound;
     /** config.xml top_shelf: the cards a dock app publishes, in the hero's place; null when off. */
     private TopShelf topShelf;
+    /** No key pressed since Home last came to the front: focus that landed on the top bar by itself may be moved. */
+    private boolean untouchedSinceResume;
     private String liveTvAction;
     private String liveTvInputId;
     /** The app library is on (config.xml, app_library): only then can the tile menu take an app off Home. */
@@ -1021,6 +1023,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         checkForUpdateDaily();
         restartIdleClock();
+        untouchedSinceResume = true;
         promptsPaused = false;
         if (grid.getAdapter() == null) grid.setAdapter(adapter);   // dropped by onTrimMemory
         switch (tileRefresh.onResume(packagesChangedSinceRebuild())) {
@@ -1205,10 +1208,21 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         });
     }
 
+    /** Focus left on the top bar (or nowhere) without a key pressed since Home came back: back to the tiles. */
+    private void focusTileIfStrayed() {
+        if (!untouchedSinceResume || !hasWindowFocus() || isFinishing() || appLibrary != null || openPopup != null
+                || reordering || libraryFocusPending || adapter.appCount() == 0) return;
+        View focused = getCurrentFocus();
+        boolean onTopBar = focused != null && (focused == btnInputs
+                || focused.getParent() == findViewById(R.id.topButtons));
+        if (focused == null || onTopBar) focusTile(lastFocused);
+    }
+
     /** Any key on Home restarts the countdown to the idle clock. */
     @Override
     public void onUserInteraction() {
         super.onUserInteraction();
+        untouchedSinceResume = false;
         restartIdleClock();
     }
 
@@ -1276,6 +1290,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             startPendingSettingsReorder();
             if (libraryFocusPending && appLibrary == null) focusLibrary();
             showCardPrompt();
+            // On a slow TV the first layout can come after the focus restore gave up, and focus then sits on the
+            // first button of the top bar (输入源). Nobody chose that: put it on the app it should be on.
+            grid.postDelayed(this::focusTileIfStrayed, 300);
         }
     }
 
@@ -2593,6 +2610,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         };
         grid.addOnScrollListener(pendingFocusScroll);
         grid.smoothScrollToPosition(pos);
+        // Already in place (the grid only had not laid the tile out yet): no scroll starts, so the listener would
+        // never fire. Try again once the next layout is done.
+        RecyclerView.OnScrollListener waiting = pendingFocusScroll;
+        grid.post(() -> {
+            if (pendingFocusScroll != waiting || grid.getScrollState() != RecyclerView.SCROLL_STATE_IDLE) return;
+            grid.removeOnScrollListener(waiting);
+            pendingFocusScroll = null;
+            RecyclerView.ViewHolder h = grid.findViewHolderForAdapterPosition(pos);
+            if (h != null) h.itemView.findViewById(R.id.card).requestFocus();
+        });
     }
 
     // ---- top bar ---------------------------------------------------------------------------------
