@@ -673,12 +673,15 @@ final class Config {
             wallpapers.addAll(WallpaperRotation.images(new File(dir, "wallpapers")));
         }
         if (wallpapers.isEmpty() && wallpaper != null) wallpapers.add(wallpaper);
-        // No picture from a theme: the ones bundled with the launcher (config.xml builtin_wallpapers), the photos.
+        // No picture from a theme: the ones bundled with the launcher (config.xml builtin_wallpapers): builtin_wallpaper,
+        // or the photos when it is not there.
         boolean builtinWallpapers = res.getBoolean(R.bool.builtin_wallpapers);
         if (json != null) builtinWallpapers = bool(json, "builtin_wallpapers", builtinWallpapers);
         List<File> builtins = builtinWallpapers ? BuiltinWallpapers.all(ctx) : Collections.emptyList();
         if (wallpapers.isEmpty() && wallpaperEnabled) {
-            wallpapers.addAll(BuiltinWallpapers.group(builtins, BuiltinWallpapers.PHOTOS));
+            File first = BuiltinWallpapers.named(builtins, res.getString(R.string.builtin_wallpaper));
+            if (first != null) wallpapers.add(first);
+            else wallpapers.addAll(BuiltinWallpapers.group(builtins, BuiltinWallpapers.PHOTOS));
         }
         // An on-TV wallpaper pick overrides the theme: a filename from the wallpapers/ collection or the bundled
         // pictures, a bundled group, or "none". Unset means the theme decides (the bundled photos without one).

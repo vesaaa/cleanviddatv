@@ -341,7 +341,7 @@ public class WallpaperGalleryActivity extends Activity {
 
     private void showCredits() {
         StringBuilder text = new StringBuilder();
-        for (String c : builtinCaptions.values()) if (!c.startsWith("抽象")) text.append("• ").append(c).append('\n');
+        for (String c : builtinCaptions.values()) if (!c.startsWith("抽象") && !c.startsWith("卡通")) text.append("• ").append(c).append('\n');
         for (String c : downloadedCaptions.values()) text.append("• ").append(c).append('\n');
         text.append('\n').append(getString(R.string.wallpaper_credits_note))
                 .append('\n').append(getString(R.string.wallpaper_online_credits));

@@ -2,17 +2,6 @@
  "version": 1,
  "wallpapers": [
   {
-   "id": "cartoon-night-cabin",
-   "title": "卡通 · 星夜小屋",
-   "credit": "CleanViddaTV",
-   "license": "CC0 1.0",
-   "source": "tools/cartoon_wallpapers.py",
-   "file": "files/cartoon-night-cabin.webp",
-   "size": 23210,
-   "sha256": "7877bdc7d3c5849cb24045f01910ec41c8cd021327c5579ebc3a8a3bbfd91241",
-   "thumb": "thumbs/cartoon-night-cabin.webp"
-  },
-  {
    "id": "cartoon-beach-sunset",
    "title": "卡通 · 海边日落",
    "credit": "CleanViddaTV",
@@ -46,17 +35,6 @@
    "thumb": "thumbs/sky-pedra.webp"
   },
   {
-   "id": "sky-chapel",
-   "title": "星空 · 小教堂上空的银河",
-   "credit": "Benh LIEU SONG",
-   "license": "CC BY-SA 4.0",
-   "source": "https://commons.wikimedia.org/wiki/File:Savault_Chapel_Under_Milky_Way_BLS.jpg",
-   "file": "files/sky-chapel.webp",
-   "size": 264112,
-   "sha256": "00163bdb0fef00f1faf411558db9ad6a25fb0617e15564ee2c7947f02f4ddf05",
-   "thumb": "thumbs/sky-chapel.webp"
-  },
-  {
    "id": "sky-linnutee",
    "title": "星空 · 湖面上的银河",
    "credit": "Kristian Pikner",
@@ -88,17 +66,6 @@
    "size": 157606,
    "sha256": "56c2000183686cc9802410a98cf95b24ba4001f6e9d469d1867c4a0f2a81829e",
    "thumb": "thumbs/earth-hawaii.webp"
-  },
-  {
-   "id": "earth-aurora-mw",
-   "title": "地球 · 银河下的南极光（国际空间站）",
-   "credit": "NASA",
-   "license": "Public domain",
-   "source": "https://commons.wikimedia.org/wiki/File:A_wispy_aurora_australis_arcs_across_the_Indian_Ocean_benaeth_the_Milky_Way_(iss074e0491096).jpg",
-   "file": "files/earth-aurora-mw.webp",
-   "size": 250904,
-   "sha256": "eedca89a55c23982742e515a406212bea048dfe2150b98cc3b4a7a3a37155134",
-   "thumb": "thumbs/earth-aurora-mw.webp"
   },
   {
    "id": "earth-thunder",

@@ -17,9 +17,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * The wallpapers that ship in the APK (assets/wallpapers): six landscape photos and three fields of soft light.
+ * The wallpapers that ship in the APK (assets/wallpapers): four photos, three fields of soft light and a cartoon.
  * They are copied once per install or update to app storage, so WallpaperPlayer reads them as files like a theme's.
- * With no theme picture, Home shows the photos, one an hour; the on-TV wallpaper picker offers every one of them.
+ * With no theme picture, Home shows config.xml builtin_wallpaper (the chapel under the Milky Way), or the photos one an
+ * hour when it is missing; the on-TV wallpaper picker offers every one of them.
  */
 final class BuiltinWallpapers {
     private static final String ASSETS = "wallpapers";
@@ -89,6 +90,10 @@ final class BuiltinWallpapers {
         if (!dir.isDirectory() && !dir.mkdirs()) throw new java.io.IOException("cannot create " + dir);
         String[] names = assets.list(ASSETS);
         if (names == null) return;
+        // A picture an older version shipped and this one does not is deleted, so it leaves the picker and the rotation.
+        java.util.Set<String> shipped = new java.util.HashSet<>(java.util.Arrays.asList(names));
+        File[] old = dir.listFiles();
+        if (old != null) for (File f : old) if (!f.getName().equals(MARKER) && !shipped.contains(f.getName())) f.delete();
         byte[] buffer = new byte[64 * 1024];
         for (String name : names) {
             File target = new File(dir, name);
@@ -102,6 +107,12 @@ final class BuiltinWallpapers {
 
     static boolean isGroup(String choice) {
         return PHOTOS.equals(choice) || ART.equals(choice);
+    }
+
+    /** The bundled picture of that file name, or null. */
+    static File named(List<File> all, String name) {
+        for (File f : all) if (f.getName().equals(name)) return f;
+        return null;
     }
 
     /** The pictures of one group (PHOTOS or ART). */

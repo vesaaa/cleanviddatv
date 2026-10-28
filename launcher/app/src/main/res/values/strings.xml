@@ -16,7 +16,7 @@
     <string name="wallpaper_applied">壁纸已更改</string>
     <string name="wallpaper_theme_default">主题默认</string>
     <string name="wallpaper_builtin_photos">风景照（每小时轮换）</string>
-    <string name="wallpaper_builtin_art">抽象光影（每小时轮换）</string>
+    <string name="wallpaper_builtin_art">光影与插画（每小时轮换）</string>
     <string name="wallpaper_credits">图片来源与授权</string>
     <string name="wallpaper_credits_note">风景照来自 Wikimedia Commons，经裁切、缩放、压暗和重新编码，按原作者的 CC BY-SA 许可分发（creativecommons.org/licenses/by-sa/4.0）。抽象光影图为 CleanViddaTV 自制。</string>
     <string name="animations_state">动态效果：%1$s</string>
