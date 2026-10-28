@@ -117,14 +117,14 @@
             android:layout_marginTop="18dp" />
 
         <TextView
-            android:id="@+id/focusSoundChoice"
+            android:id="@+id/clock24hChoice"
             style="@style/SettingsRow"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="28dp" />
 
         <TextView
             android:id="@+id/screensaverChoice"
             style="@style/SettingsRow"
-            android:layout_marginTop="28dp" />
+            android:layout_marginTop="10dp" />
 
         <TextView
             android:id="@+id/screensaverStyleChoice"

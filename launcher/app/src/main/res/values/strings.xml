@@ -23,7 +23,7 @@
     <string name="advanced_effects">高级动态效果</string>
     <string name="advanced_effects_state">高级动态效果：%1$s</string>
     <string name="parallax_state">视差效果：%1$s</string>
-    <string name="focus_sound_state">按键音效：%1$s</string>
+    <string name="clock_24h_state">24 小时制：%1$s</string>
     <string name="screensaver_state">屏保：%1$s</string>
     <string name="screensaver_after">闲置 %1$d 分钟后</string>
     <string name="screensaver_style_state">屏保内容：%1$s</string>

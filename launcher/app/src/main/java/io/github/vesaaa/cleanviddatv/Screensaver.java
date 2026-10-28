@@ -22,11 +22,17 @@ interface Screensaver {
         } catch (RuntimeException ignored) {
             // the clock needs no configuration
         }
+        boolean clock24h = cfg != null ? cfg.clock24h : ctx.getResources().getBoolean(R.bool.clock_24h);
+        IntFunction<View> content = layout -> {
+            View root = setContent.apply(layout);
+            Clock24.apply(root, clock24h);
+            return root;
+        };
         if (cfg != null && Config.SCREENSAVER_PHOTOS.equals(cfg.screensaverStyle)) {
-            PhotoScene photos = PhotoScene.create(setContent.apply(R.layout.dream_photos), ctx, cfg);
+            PhotoScene photos = PhotoScene.create(content.apply(R.layout.dream_photos), ctx, cfg);
             if (photos != null) return photos;
         }
-        ClockScene clock = new ClockScene(setContent.apply(R.layout.dream_clock));
+        ClockScene clock = new ClockScene(content.apply(R.layout.dream_clock));
         clock.useHomeWallpaper(ctx);
         return clock;
     }

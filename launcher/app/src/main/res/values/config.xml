@@ -448,9 +448,10 @@
          effects and no reduced_motion. Launcher settings can switch it; a theme can set "parallax_tiles". -->
     <bool name="parallax_tiles">true</bool>
 
-    <!-- A short tick on every focus move between tiles and a soft click on OK. Off by default; Launcher settings can
-         switch it, and a theme can set "focus_sound". -->
-    <bool name="focus_sound">false</bool>
+    <!-- The launcher's clocks (Home, the screensavers) in 24-hour time, whatever the TV's own 12/24-hour setting, which
+         these sets leave at 12 hours with no menu to change it. Off follows the TV. Launcher settings can switch it, and
+         a theme can set "clock_24h". -->
+    <bool name="clock_24h">true</bool>
 
     <!-- Top shelf: a dock app that publishes one (docs/top-shelf.md, e.g. VsTV's channels with what is on) shows its
          cards above the dock instead of its name while it has focus; Up walks into them. Needs dock_row and dock_title.

@@ -31,7 +31,7 @@ final class LastOpened {
      * "5 minutes ago" within the hour, then the day and the time: "today, 11:40 am", "yesterday, 9:40 pm",
      * "3 days ago, 9:40 pm", "Oct 12, 9:40 pm". The parts are Android's own wording in the TV's language.
      */
-    static String describe(Context ctx, long when) {
+    static String describe(Context ctx, long when, boolean clock24h) {
         long now = System.currentTimeMillis();
         // Under a minute Android says "0 minutes ago"; one minute reads better.
         when = Math.min(when, now - DateUtils.MINUTE_IN_MILLIS);
@@ -43,7 +43,10 @@ final class LastOpened {
         if (Locale.getDefault().getLanguage().equals("en") && (day.startsWith("Yesterday") || day.startsWith("Today"))) {
             day = Character.toLowerCase(day.charAt(0)) + day.substring(1);
         }
-        return day + ", " + DateUtils.formatDateTime(ctx, when, DateUtils.FORMAT_SHOW_TIME);
+        // DateUtils follows the TV's 12/24-hour setting only; clock_24h writes the time itself.
+        String time = clock24h ? new java.text.SimpleDateFormat("HH:mm", Locale.getDefault()).format(when)
+                : DateUtils.formatDateTime(ctx, when, DateUtils.FORMAT_SHOW_TIME);
+        return day + ", " + time;
     }
 
     private static SharedPreferences prefs(Context ctx) {

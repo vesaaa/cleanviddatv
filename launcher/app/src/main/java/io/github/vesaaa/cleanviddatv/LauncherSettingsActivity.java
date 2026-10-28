@@ -40,8 +40,8 @@ public final class LauncherSettingsActivity extends Activity {
     private TextView openOnStartChoice;
     private TextView adbChoice;
     private TextView updateChoice, updateBetaChoice;
-    private TextView parallaxChoice, focusSoundChoice, screensaverChoice, screensaverStyleChoice;
-    private boolean parallax, focusSound;
+    private TextView parallaxChoice, clock24hChoice, screensaverChoice, screensaverStyleChoice;
+    private boolean parallax, clock24h;
     private int screensaverMinutes;
     private String screensaverStyle;
     private static final int[] SCREENSAVER_MINUTES = {0, 5, 10, 15, 30, 60};
@@ -141,7 +141,7 @@ public final class LauncherSettingsActivity extends Activity {
             }
         });
         parallax = config.parallaxTiles;
-        focusSound = config.focusSound;
+        clock24h = config.clock24h;
         screensaverMinutes = config.homeIdleClockMinutes;
         screensaverStyle = config.screensaverStyle;
         parallaxChoice = findViewById(R.id.parallaxChoice);
@@ -151,10 +151,10 @@ public final class LauncherSettingsActivity extends Activity {
             changed();
             refresh();
         });
-        focusSoundChoice = findViewById(R.id.focusSoundChoice);
-        focusSoundChoice.setOnClickListener(v -> {
-            focusSound = !focusSound;
-            choices.edit().putBoolean(Config.FOCUS_SOUND_KEY, focusSound).apply();
+        clock24hChoice = findViewById(R.id.clock24hChoice);
+        clock24hChoice.setOnClickListener(v -> {
+            clock24h = !clock24h;
+            choices.edit().putBoolean(Config.CLOCK_24H_KEY, clock24h).apply();
             changed();
             refresh();
         });
@@ -178,7 +178,7 @@ public final class LauncherSettingsActivity extends Activity {
             choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
                     .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
                     .remove(Config.DOCK_OPACITY_KEY).remove(OpenOnStart.KEY).remove(Config.PARALLAX_KEY)
-                    .remove(Config.FOCUS_SOUND_KEY).remove(Config.SCREENSAVER_MINUTES_KEY)
+                    .remove(Config.CLOCK_24H_KEY).remove(Config.SCREENSAVER_MINUTES_KEY)
                     .remove(Config.SCREENSAVER_STYLE_KEY).commit();
             Config current = Config.load(this);
             columns = current.columns;
@@ -187,7 +187,7 @@ public final class LauncherSettingsActivity extends Activity {
             animations = current.animations;
             advancedEffects = current.animations && current.advancedEffects;
             parallax = current.parallaxTiles;
-            focusSound = current.focusSound;
+            clock24h = current.clock24h;
             screensaverMinutes = current.homeIdleClockMinutes;
             screensaverStyle = current.screensaverStyle;
             changed();
@@ -439,8 +439,8 @@ public final class LauncherSettingsActivity extends Activity {
                 getString(parallax && advancedEffects ? R.string.on : R.string.off)));
         parallaxChoice.setEnabled(advancedEffects);
         parallaxChoice.setAlpha(advancedEffects ? 1f : 0.5f);
-        focusSoundChoice.setText(getString(R.string.focus_sound_state,
-                getString(focusSound ? R.string.on : R.string.off)));
+        clock24hChoice.setText(getString(R.string.clock_24h_state,
+                getString(clock24h ? R.string.on : R.string.off)));
         screensaverChoice.setText(getString(R.string.screensaver_state, screensaverLabel(screensaverMinutes)));
         screensaverStyleChoice.setText(getString(R.string.screensaver_style_state, getString(
                 Config.SCREENSAVER_CLOCK.equals(screensaverStyle) ? R.string.screensaver_clock : R.string.screensaver_photos)));
@@ -538,7 +538,7 @@ public final class LauncherSettingsActivity extends Activity {
                 || choices.contains("animations") || choices.contains("advanced_effects")
                 || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
                 || choices.contains(OpenOnStart.KEY) || choices.contains(Config.PARALLAX_KEY)
-                || choices.contains(Config.FOCUS_SOUND_KEY) || choices.contains(Config.SCREENSAVER_MINUTES_KEY)
+                || choices.contains(Config.CLOCK_24H_KEY) || choices.contains(Config.SCREENSAVER_MINUTES_KEY)
                 || choices.contains(Config.SCREENSAVER_STYLE_KEY);
     }
 

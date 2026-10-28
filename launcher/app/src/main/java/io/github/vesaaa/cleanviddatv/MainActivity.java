@@ -128,8 +128,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      */
     private static final android.view.animation.Interpolator SCROLL_EASE = new android.view.animation.DecelerateInterpolator(1.8f);
     private static final int SCROLL_MS = 280;
-    /** config.xml focus_sound: the tick on a focus move and the click on OK; null when off. */
-    private FocusSound focusSound;
+    /** config.xml clock_24h: the clocks in 24-hour time even when the TV is set to 12 hours. */
+    private boolean clock24h;
     /** config.xml top_shelf: the cards a dock app publishes, in the hero's place; null when off. */
     private TopShelf topShelf;
     /** No key pressed since Home last came to the front: focus that landed on the top bar by itself may be moved. */
@@ -441,7 +441,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         festive = festival.active(LocalDate.now());
         liveTvPkg = cfg.liveTvPackage;
         idleClockMs = cfg.homeIdleClockMinutes * MINUTE_MS;
-        focusSound = cfg.focusSound ? new FocusSound(this) : null;
+        clock24h = cfg.clock24h;
+        Clock24.apply(findViewById(android.R.id.content), clock24h);
         bootToLiveTv = cfg.bootToLiveTv;
         openOnStartChoice = cfg.openOnStartChoice;
         liveTvAction = cfg.liveTvAction;
@@ -1300,7 +1301,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     protected void onDestroy() {
         super.onDestroy();
         alive--;
-        if (focusSound != null) focusSound.release();
         if (topShelf != null) topShelf.release();
         if (BuiltinWallpapers.onCopied == wallpapersCopied) BuiltinWallpapers.onCopied = null;
         unregisterReceiver(packageReceiver);
@@ -1713,8 +1713,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     @Override
     public void onTileFocused(int position, View card) {
-        // A move to another tile ticks; the refits and the focus restored on return call this for the same tile.
-        if (focusSound != null && position != lastFocused && card.getWidth() > 0) focusSound.tick();
         lastFocused = position;
         lastFocusedKey = adapter.keyAt(position);
         // Focus restored before the first layout (cold start): the tile has no size yet, and the glass
@@ -1794,11 +1792,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             revealRect.set(0, -(int) pad * 2, item.getWidth(), item.getHeight() + (int) pad);
             grid.requestChildRectangleOnScreen(item, revealRect, reducedMotion);
         }
-    }
-
-    @Override
-    public void onTileClick() {
-        if (focusSound != null) focusSound.click();
     }
 
     @Override
@@ -1982,7 +1975,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             heroMeta.setVisibility(View.INVISIBLE);
             return;
         }
-        String rel = LastOpened.describe(this, when);
+        String rel = LastOpened.describe(this, when, clock24h);
         String text = getString(R.string.last_opened, rel);
         SpannableString line = new SpannableString(text);
         int at = text.indexOf(rel);
@@ -2721,7 +2714,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
         // FP1 FRI 11:00 PM   FP2 SAT 2:30 AM ...: done sessions fade, the live one is red, the next one bright.
         java.time.format.DateTimeFormatter when = java.time.format.DateTimeFormatter.ofPattern(
-                android.text.format.DateFormat.is24HourFormat(this) ? "EEE HH:mm" : "EEE h:mm a", Locale.getDefault())
+                Clock24.is24(this, clock24h) ? "EEE HH:mm" : "EEE h:mm a", Locale.getDefault())
                 .withZone(java.time.ZoneId.systemDefault());
         android.text.SpannableStringBuilder row = new android.text.SpannableStringBuilder();
         for (int i = 0; i < race.sessions.size(); i++) {

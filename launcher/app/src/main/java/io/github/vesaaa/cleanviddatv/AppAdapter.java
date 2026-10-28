@@ -63,9 +63,6 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         /** The focused tile's parallax tilt (TileParallax), -1..1 on each axis, for the highlight's sheen. */
         default void onTileTilt(float x, float y) { }
-
-        /** OK on a tile, just before it opens (focus_sound's click). */
-        default void onTileClick() { }
         void onLibraryUp();
     }
 
@@ -518,10 +515,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             h.label.setText(e.label);
             h.label.setVisibility(uniformTiles ? View.GONE : View.VISIBLE);
         }
-        h.card.setOnClickListener(v -> {
-            if (listener != null) listener.onTileClick();
-            launch(e);
-        });
+        h.card.setOnClickListener(v -> launch(e));
         h.card.setOnLongClickListener(v -> {
             if (tileMenu) {
                 int pos = h.getBindingAdapterPosition();
