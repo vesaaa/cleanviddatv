@@ -222,17 +222,6 @@
    "thumb": "thumbs/nc-kuang-si.webp"
   },
   {
-   "id": "retro-evening",
-   "title": "复古 · 傍晚",
-   "credit": "REGT-URRED",
-   "license": "CC0 1.0",
-   "source": "themes/retro",
-   "file": "files/retro-evening.webp",
-   "size": 71168,
-   "sha256": "e9d1f75803e0e334f09abb74bc1ba78dd539bc9c5c0d71a34fde5adeb484250c",
-   "thumb": "thumbs/retro-evening.webp"
-  },
-  {
    "id": "aurora",
    "title": "极光",
    "credit": "CleanYourTV",
