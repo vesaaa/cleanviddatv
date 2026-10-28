@@ -178,17 +178,6 @@
    "thumb": "thumbs/nc-loch-tummel.webp"
   },
   {
-   "id": "nc-roruper-holz",
-   "title": "德国 Roruper Holz，林间阳光",
-   "credit": "Dietmar Rabich",
-   "license": "CC BY-SA 4.0",
-   "source": "https://commons.wikimedia.org/wiki/File:D%C3%BClmen,_Rorup,_NSG_Roruper_Holz_--_2021_--_8187-91.jpg",
-   "file": "files/nc-roruper-holz.webp",
-   "size": 232354,
-   "sha256": "457db753ea3f167a332fe55c8f37723403e6f427dbdc19eb9872ad6a5004cd58",
-   "thumb": "thumbs/nc-roruper-holz.webp"
-  },
-  {
    "id": "nc-mossy-forest",
    "title": "比利时 Lierneux，苔藓森林",
    "credit": "Trougnouf",
@@ -220,17 +209,6 @@
    "size": 300042,
    "sha256": "9165651155402a4c465995005910226121e0110fa7a388ec30548af5b0206400",
    "thumb": "thumbs/nc-kuang-si.webp"
-  },
-  {
-   "id": "aurora",
-   "title": "极光",
-   "credit": "CleanYourTV",
-   "license": "MIT",
-   "source": "themes/aurora",
-   "file": "files/aurora.webp",
-   "size": 10874,
-   "sha256": "6f43fcad194f1623707365d796eb542be9662228f3de612743c2b7e071f8eb0f",
-   "thumb": "thumbs/aurora.webp"
   },
   {
    "id": "glass",

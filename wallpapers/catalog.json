@@ -31,14 +31,11 @@
    "source": "https://commons.wikimedia.org/wiki/File:Havelock_Island,_Mangrove_tree_on_the_beach,_Andaman_Islands.jpg"},
   {"id": "nc-loch-tummel", "title": "苏格兰 Tummel 湖，秋日倒影", "credit": "Eric Kilby", "license": "CC BY-SA 4.0",
    "source": "https://commons.wikimedia.org/wiki/File:Foggy_Reflections_-_Loch_Tummel.jpg"},
-  {"id": "nc-roruper-holz", "title": "德国 Roruper Holz，林间阳光", "credit": "Dietmar Rabich", "license": "CC BY-SA 4.0",
-   "source": "https://commons.wikimedia.org/wiki/File:D%C3%BClmen,_Rorup,_NSG_Roruper_Holz_--_2021_--_8187-91.jpg"},
   {"id": "nc-mossy-forest", "title": "比利时 Lierneux，苔藓森林", "credit": "Trougnouf", "license": "CC BY 4.0",
    "source": "https://commons.wikimedia.org/wiki/File:Mossy_forest_in_Lierneux_(DSC01260).jpg"},
   {"id": "nc-khao-sok", "title": "泰国考索，雾中雨林湖", "credit": "Vyacheslav Argenberg", "license": "CC BY 4.0",
    "source": "https://commons.wikimedia.org/wiki/File:Cheow_Lan_Lake,_Rainforest,_Khao_Sok,_Thailand.jpg"},
   {"id": "nc-kuang-si", "title": "老挝光西瀑布", "credit": "Basile Morin", "license": "CC BY-SA 4.0",
    "source": "https://commons.wikimedia.org/wiki/File:Kuang_Si_Falls_and_a_turquoise_water_pool_in_Luang_Prabang_province_Laos.jpg"},
-  {"id": "aurora", "title": "极光", "credit": "CleanYourTV", "license": "MIT", "source": "themes/aurora"},
   {"id": "glass", "title": "深蓝微光", "credit": "CleanYourTV", "license": "MIT", "source": "themes/glass"}
 ]

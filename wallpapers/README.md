@@ -18,7 +18,7 @@ To add one:
 
 Sources and licences: the `source`, `credit` and `license` of each entry in `catalog.json`; the nature photos are
 from Wikimedia Commons (see also `themes/nature-calm/CREDITS.md`),
-`aurora` and `glass` come from the CleanYourTV themes (MIT).
+`glass` comes from the CleanYourTV themes (MIT).
 `sky-*` and `beach-*` are from Wikimedia Commons, `earth-*` are NASA photographs (public domain, also via Commons),
 and `cartoon-*` are drawn by `tools/cartoon_wallpapers.py` in this repository (CC0): change a scene there and rerun
 it, then `tools/wallpapers.py`.
