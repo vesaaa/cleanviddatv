@@ -68,6 +68,16 @@ final class TopShelf {
     private final HorizontalScrollView scroller;
     private final LinearLayout row;
     private final SimpleDateFormat clock = new SimpleDateFormat("HH:mm", Locale.getDefault());
+    /** parallax_tiles with advanced effects: the focused card tilts and sways like a tile (TileParallax). */
+    private final boolean parallax;
+    /**
+     * A soft glow in the focused card's colour behind the row, the way tvOS changes the backdrop to what is focused.
+     * Under the grid and the hero, over the wallpaper; shown only while focus is in the row.
+     */
+    private final View glow;
+    private final GradientDrawable glowShape = new GradientDrawable();
+    private int glowColor;
+    private final Runnable glowCheck = this::hideGlowUnlessFocused;
 
     private Map<String, ProviderInfo> providers;
     private final Map<String, List<ShelfItem>> cache = new HashMap<>();
@@ -81,11 +91,23 @@ final class TopShelf {
     private ContentObserver observer;
     private final Runnable refresh = () -> load(true);
 
-    TopShelf(Activity activity, FrameLayout root, View hero, Host host) {
+    TopShelf(Activity activity, FrameLayout root, View hero, Host host, boolean parallax) {
         this.activity = activity;
         this.hero = hero;
         this.host = host;
+        this.parallax = parallax;
         density = activity.getResources().getDisplayMetrics().density;
+
+        glow = new View(activity);
+        glowShape.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        glow.setBackground(glowShape);
+        glow.setAlpha(0f);
+        glow.setVisibility(View.GONE);
+        glow.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        root.addView(glow, root.indexOfChild(hero), new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        glow.addOnLayoutChangeListener((v, l, t, rr, b, ol, ot, or, ob) ->
+                glowShape.setGradientRadius(Math.max(rr - l, b - t) * 0.6f));
 
         panel = new LinearLayout(activity);
         panel.setOrientation(LinearLayout.VERTICAL);
@@ -172,6 +194,7 @@ final class TopShelf {
         panel.setAlpha(0f);
         panel.setVisibility(View.GONE);
         hero.setVisibility(View.VISIBLE);
+        hideGlow();
     }
 
     /** Up from the dock tile of this app: focus its row when it shows cards. */
@@ -312,6 +335,7 @@ final class TopShelf {
             panel.setAlpha(0f);
             panel.setVisibility(View.GONE);
             hero.setVisibility(View.VISIBLE);
+            hideGlow();
         }
         if (hadFocus) host.returnToDock();
     }
@@ -358,14 +382,17 @@ final class TopShelf {
         cell.addView(face, new FrameLayout.LayoutParams(dp(CARD_W_DP), dp(CARD_H_DP)));
 
         Bitmap image = item.imageUri == null ? null : images.get(item.imageUri);
+        View layer;
         if (image != null && item.wide) {
             ImageView picture = new ImageView(activity);
+            layer = picture;
             picture.setScaleType(ImageView.ScaleType.CENTER_CROP);
             picture.setImageBitmap(image);
             face.addView(picture, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
         } else if (image != null) {
             ImageView logo = new ImageView(activity);
+            layer = logo;
             logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
             logo.setImageBitmap(image);
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(dp(96), dp(64), Gravity.CENTER);
@@ -374,6 +401,7 @@ final class TopShelf {
         } else {
             // No image: the title's first character, large, as a placeholder logo.
             TextView initial = new TextView(activity);
+            layer = initial;
             initial.setText(item.title.trim().substring(0, item.title.trim().offsetByCodePoints(0, 1)));
             initial.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40);
             initial.setTextColor(0xE6FFFFFF);
@@ -438,7 +466,13 @@ final class TopShelf {
         FrameLayout.LayoutParams tp = new FrameLayout.LayoutParams(dp(CARD_W_DP), ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.TOP);
         tp.topMargin = dp(CARD_H_DP + 8);
+        // tvOS names only the focused item: the others are their pictures alone.
+        text.setAlpha(0f);
         cell.addView(text, tp);
+        // The glow's colour: the picture's most vivid one, or a soft blue for a card without one.
+        cell.setTag(R.id.shelfFace, image == null ? 0xFF3D5AFE
+                : AppAdapter.vividColor(new android.graphics.drawable.BitmapDrawable(activity.getResources(), image)));
+        if (parallax) cell.setTag(new TileParallax(face, cell, null, layer));
         return cell;
     }
 
@@ -467,15 +501,78 @@ final class TopShelf {
             ring.setStroke(0, 0);
             bg.setColor(0x3DFFFFFF);
         }
-        face.animate().scaleX(focused ? 1.08f : 1f).scaleY(focused ? 1.08f : 1f)
-                .translationZ(focused ? dp(14) : 0f).setDuration(focused ? 200 : 150)
-                .setInterpolator(new DecelerateInterpolator(1.5f)).start();
+        // Lifted like a focused tile, but with no elevation: the card is translucent, so its own shadow would show
+        // through it as a pale box. The glow behind the row gives the depth instead.
+        face.animate().scaleX(focused ? 1.1f : 1f).scaleY(focused ? 1.1f : 1f)
+                .translationY(focused ? -dp(6) : 0f)
+                .setDuration(focused ? 220 : 160).setInterpolator(new DecelerateInterpolator(1.5f)).start();
         View text = ((ViewGroup) cell).getChildAt(1);
-        text.animate().translationY(focused ? dp(6) : 0f).setDuration(200).start();
+        text.animate().alpha(focused ? 1f : 0f).translationY(focused ? dp(8) : 0f).setDuration(focused ? 220 : 140).start();
+        Object tilt = cell.getTag();
+        if (tilt instanceof TileParallax) {
+            if (focused) ((TileParallax) tilt).focus();
+            else ((TileParallax) tilt).blur();
+        }
+        if (focused) {
+            Object color = cell.getTag(R.id.shelfFace);
+            showGlow(color instanceof Integer ? (Integer) color : 0xFF3D5AFE, cell);
+        } else {
+            // Focus moving to the next card keeps the glow; leaving the row fades it.
+            handler.removeCallbacks(glowCheck);
+            handler.post(glowCheck);
+        }
+    }
+
+    private void showGlow(int color, View cell) {
+        handler.removeCallbacks(glowCheck);
+        View parent = (View) glow.getParent();
+        int[] at = new int[2];
+        cell.getLocationInWindow(at);
+        if (parent.getWidth() > 0) {
+            glowShape.setGradientCenter(Math.max(0.15f, Math.min(0.85f, (at[0] + cell.getWidth() / 2f) / parent.getWidth())),
+                    Math.max(0.1f, (at[1] + cell.getHeight() / 3f) / Math.max(1, parent.getHeight())));
+        }
+        if (glow.getVisibility() != View.VISIBLE) {
+            glowColor = color;
+            setGlowColors(color);
+            glow.setVisibility(View.VISIBLE);
+            glow.animate().cancel();
+            glow.animate().alpha(1f).setDuration(400).start();
+            return;
+        }
+        if (color == glowColor) {
+            glow.animate().alpha(1f).setDuration(200).start();
+            return;
+        }
+        glowColor = color;
+        glow.animate().cancel();
+        glow.animate().alpha(0.4f).setDuration(140).withEndAction(() -> {
+            setGlowColors(glowColor);
+            glow.animate().alpha(1f).setDuration(320).start();
+        }).start();
+    }
+
+    private void setGlowColors(int color) {
+        int c = color & 0x00FFFFFF;
+        glowShape.setColors(new int[]{0x66000000 | c, 0x26000000 | c, c});
+    }
+
+    private void hideGlowUnlessFocused() {
+        if (!panel.hasFocus()) hideGlow();
+    }
+
+    private void hideGlow() {
+        handler.removeCallbacks(glowCheck);
+        if (glow.getVisibility() != View.VISIBLE) return;
+        glow.animate().cancel();
+        glow.animate().alpha(0f).setDuration(300).withEndAction(() -> glow.setVisibility(View.GONE)).start();
     }
 
     private boolean onCardKey(View v, int keyCode, KeyEvent event) {
         boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
+        if (down && (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
+            TileParallax.keyPressed(keyCode);
+        }
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_DOWN:
             case KeyEvent.KEYCODE_BACK:

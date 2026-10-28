@@ -36,6 +36,8 @@ final class TileParallax {
     private static final long SWAY_DELAY_MS = 700L;
 
     private final View card;
+    /** The view that holds focus: the card itself, or the cell around it (the top shelf's cards). */
+    private final View focusOwner;
     private final View[] layers;
     private final Listener listener;
     private final float shiftPx;
@@ -45,7 +47,12 @@ final class TileParallax {
 
     /** layers: the views inside the card that move against the tilt (the banner and the icon). */
     TileParallax(View card, Listener listener, View... layers) {
+        this(card, card, listener, layers);
+    }
+
+    TileParallax(View card, View focusOwner, Listener listener, View... layers) {
         this.card = card;
+        this.focusOwner = focusOwner;
         this.layers = layers;
         this.listener = listener;
         float density = card.getResources().getDisplayMetrics().density;
@@ -105,7 +112,7 @@ final class TileParallax {
     }
 
     private void startSway() {
-        if (!card.isFocused() || !card.isAttachedToWindow()) return;
+        if (!focusOwner.isFocused() || !card.isAttachedToWindow()) return;
         float fromY = card.getRotationY(), fromX = card.getRotationX();
         sway = ValueAnimator.ofFloat(0f, (float) (2 * Math.PI));
         sway.setDuration(SWAY_MS);
@@ -137,6 +144,6 @@ final class TileParallax {
             layer.setTranslationX(-x * shiftPx);
             layer.setTranslationY(-y * shiftPx);
         }
-        if (listener != null && card.isFocused()) listener.onTilt(x, y);
+        if (listener != null && focusOwner.isFocused()) listener.onTilt(x, y);
     }
 }

@@ -858,7 +858,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return Math.max(0, Math.min(255, Math.round(v)));
     }
 
-    private static int vividColor(Drawable live) {
+    static int vividColor(Drawable live) {
         if (live == null) return 0xFF444444;
         // Draw a private copy: changing the bounds of the drawable an ImageView shows would blank the tile.
         Drawable d = live.getConstantState() != null ? live.getConstantState().newDrawable().mutate() : live;
