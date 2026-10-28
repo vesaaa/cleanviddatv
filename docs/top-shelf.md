@@ -6,7 +6,7 @@ CleanViddaTV 的焦点停在程序坞里某个应用上时，上方大图区（h
 接口是一个**只读的 ContentProvider**，由应用提供，桌面来读。桌面不联网、不解析直播源，所有内容都由应用自己准备好。
 任何应用都可以按这个接口接入，桌面不认包名。
 
-版本：1（2026-10-28）
+版本：1.1（2026-10-28）。1.1 新增可选列 `preview_image_uri`，旧的应用不给这一列也照常工作。
 
 ## 1. 应用如何声明
 
@@ -52,6 +52,7 @@ content://<authority>/items
 | `badge` | string | 否 | 角标，最多 4 个字，例如 `直播`、`回看` |
 | `section` | string | 否 | 分组：`recent`（最近观看）或 `favorite`（收藏）。桌面在两组之间加一个小间隔 |
 | `intent_uri` | string | 是 | 按确认键时启动的 Intent，用 `intent.toUri(Intent.URI_INTENT_SCHEME)` 生成，桌面用 `Intent.parseUri` 还原后 `startActivity` |
+| `preview_image_uri` | string | 否 | 频道画面截图（16:9），同样必须是本 provider 的 `content://<authority>/image/...`。平时卡片显示 `image_uri`（台标），**选中时淡入截图**，台标缩到左上角。只给仍然有效的截图（见第 3.1 节），没有就留空 |
 | `preview_uri` | string | 否 | **第二阶段**用：可直接播放的预览流地址（HLS）。现在先留空 |
 
 桌面会把 `intent_uri` 里解析出来的 Intent 的包名强制设成这个 provider 所在的应用，所以只能打开应用自己的界面。
@@ -97,6 +98,19 @@ context.contentResolver.notifyChange(Uri.parse("content://$authority/items"), nu
   找不到这个频道时退回打开 VsTV 首页。`intent_uri` 就用这个 Intent 生成。
 - `subtitle` / `progress` / `start_ms` / `end_ms` 从已加载的节目单（EPG）里取，没有节目单的频道留空、`progress` 为 -1。
 - 台标：用已有的 `logoUrl` 下载缓存后由 `openFile` 提供。
+
+## 3.1 频道截图（`preview_image_uri`）
+
+平时一排卡片只显示台标，保持整齐；选中某张卡片时，卡片淡入这个频道的截图，左上角保留一个小台标，类似 tvOS 选中后展开内容。
+
+- **怎么来**：应用在换台或退出播放时，从播放器截一帧（缩到 640×360 以内，WebP，单张不超过 200 KB），记下截图时间和当时在播节目的开始时间。
+- **只给有效的截图**，过期由应用判断，桌面不判断：
+  - 有节目单：截图时的节目和现在在播的是**同一个节目**（开始时间相同），并且截图**不超过 2 小时**。节目一换或超过 2 小时就不给。
+  - 没有节目单：截图**不超过 30 分钟**。
+- **截图更新时换一个地址**（例如 `content://<authority>/image/still-<频道>-<截图时间>`）：桌面按地址缓存图片，地址不变就不会重新读取。
+- 截不到画面（加密频道、硬件解码不允许截图）就不给，桌面照常显示台标。
+- 只有看过的频道才有截图；收藏但没看过的频道没有截图，这是正常的。
+- 截图过期的时间点也算「内容变化」：应用在 `query()` 时按当前时间判断即可，桌面会在最早的 `end_ms` 后自动重新查询。
 
 ## 7. 第二阶段（暂不做）
 

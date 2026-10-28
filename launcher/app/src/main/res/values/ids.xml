@@ -2,4 +2,7 @@
 <resources>
     <!-- TopShelf builds its cards in code: the rounded face of a card, found again for its focus look. -->
     <item name="shelfFace" type="id" />
+    <!-- A card's centred logo (or its initial), and its channel still shown while it has focus. -->
+    <item name="shelfLogo" type="id" />
+    <item name="shelfPreview" type="id" />
 </resources>

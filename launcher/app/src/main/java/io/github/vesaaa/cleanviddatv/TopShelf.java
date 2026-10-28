@@ -227,13 +227,16 @@ final class TopShelf {
             List<ShelfItem> items = ShelfSource.query(cr, authority);
             Map<String, Bitmap> loaded = new HashMap<>();
             for (ShelfItem item : items) {
-                if (item.imageUri == null || images.containsKey(item.imageUri) || loaded.containsKey(item.imageUri)) continue;
-                loaded.put(item.imageUri, ShelfSource.image(cr, item.imageUri));
+                for (String uri : new String[]{item.imageUri, item.previewImageUri}) {
+                    if (uri == null || images.containsKey(uri) || loaded.containsKey(uri)) continue;
+                    loaded.put(uri, ShelfSource.image(cr, uri));
+                }
             }
             handler.post(() -> {
                 if (activity.isDestroyed()) return;
                 images.putAll(loaded);
                 cache.put(forPkg, items);
+                pruneImages();
                 cachedAt.put(forPkg, System.currentTimeMillis());
                 if (!forPkg.equals(pkg)) return;
                 if (items.isEmpty()) {
@@ -247,13 +250,26 @@ final class TopShelf {
         });
     }
 
+    /** Pictures no cached card points at any more (an older screenshot, a channel dropped from the shelf). */
+    private void pruneImages() {
+        java.util.Set<String> used = new java.util.HashSet<>();
+        for (List<ShelfItem> list : cache.values()) {
+            for (ShelfItem item : list) {
+                used.add(item.imageUri);
+                used.add(item.previewImageUri);
+            }
+        }
+        images.keySet().retainAll(used);
+    }
+
     private boolean changed(List<ShelfItem> items) {
         List<ShelfItem> current = shownItems();
         if (current.size() != items.size()) return true;
         for (int i = 0; i < items.size(); i++) {
             ShelfItem a = current.get(i), b = items.get(i);
             if (a.id != b.id || !TextUtils.equals(a.title, b.title) || !TextUtils.equals(a.subtitle, b.subtitle)
-                    || a.startMs != b.startMs || !TextUtils.equals(a.imageUri, b.imageUri)) return true;
+                    || a.startMs != b.startMs || !TextUtils.equals(a.imageUri, b.imageUri)
+                    || !TextUtils.equals(a.previewImageUri, b.previewImageUri)) return true;
         }
         return false;
     }
@@ -410,6 +426,37 @@ final class TopShelf {
                     ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
             face.addView(initial, lp);
         }
+        layer.setId(R.id.shelfLogo);
+
+        // The channel's still, faded in over the card while it has focus, with the logo small in its corner.
+        Bitmap still = item.previewImageUri == null ? null : images.get(item.previewImageUri);
+        ImageView stillView = null;
+        if (still != null) {
+            FrameLayout preview = new FrameLayout(activity);
+            preview.setId(R.id.shelfPreview);
+            preview.setAlpha(0f);
+            stillView = new ImageView(activity);
+            stillView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            stillView.setImageBitmap(still);
+            preview.addView(stillView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+            // A shade along the top, so the small logo reads on a bright picture.
+            View shade = new View(activity);
+            shade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                    new int[]{0x99000000, 0x00000000}));
+            preview.addView(shade, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(46), Gravity.TOP));
+            if (image != null && !item.wide) {
+                ImageView corner = new ImageView(activity);
+                corner.setScaleType(ImageView.ScaleType.FIT_START);
+                corner.setImageBitmap(image);
+                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(dp(44), dp(28), Gravity.TOP | Gravity.START);
+                lp.topMargin = dp(8);
+                lp.setMarginStart(dp(10));
+                preview.addView(corner, lp);
+            }
+            face.addView(preview, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+        }
 
         String badge = item.shortBadge();
         if (badge != null) {
@@ -472,7 +519,10 @@ final class TopShelf {
         // The glow's colour: the picture's most vivid one, or a soft blue for a card without one.
         cell.setTag(R.id.shelfFace, image == null ? 0xFF3D5AFE
                 : AppAdapter.vividColor(new android.graphics.drawable.BitmapDrawable(activity.getResources(), image)));
-        if (parallax) cell.setTag(new TileParallax(face, cell, null, layer));
+        if (parallax) {
+            cell.setTag(stillView == null ? new TileParallax(face, cell, null, layer)
+                    : new TileParallax(face, cell, null, layer, stillView));
+        }
         return cell;
     }
 
@@ -506,6 +556,15 @@ final class TopShelf {
         face.animate().scaleX(focused ? 1.1f : 1f).scaleY(focused ? 1.1f : 1f)
                 .translationY(focused ? -dp(6) : 0f)
                 .setDuration(focused ? 220 : 160).setInterpolator(new DecelerateInterpolator(1.5f)).start();
+        // The still takes over the card while it has focus; the centred logo steps back.
+        View preview = face.findViewById(R.id.shelfPreview);
+        if (preview != null) {
+            View logo = face.findViewById(R.id.shelfLogo);
+            preview.animate().alpha(focused ? 1f : 0f).setStartDelay(focused ? 120 : 0)
+                    .setDuration(focused ? 320 : 160).start();
+            if (logo != null) logo.animate().alpha(focused ? 0f : 1f).setStartDelay(focused ? 120 : 0)
+                    .setDuration(focused ? 320 : 160).start();
+        }
         View text = ((ViewGroup) cell).getChildAt(1);
         text.animate().alpha(focused ? 1f : 0f).translationY(focused ? dp(8) : 0f).setDuration(focused ? 220 : 140).start();
         Object tilt = cell.getTag();

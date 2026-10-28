@@ -82,11 +82,13 @@ final class ShelfSource {
             if (c == null) return items;
             while (c.moveToNext() && items.size() < ShelfItem.MAX) {
                 String image = string(c, "image_uri");
+                String preview = string(c, "preview_image_uri");
                 ShelfItem item = new ShelfItem(longValue(c, "_id", items.size()), string(c, "title"),
                         string(c, "subtitle"), ShelfItem.ownImage(image, authority) ? image : null,
                         "wide".equals(string(c, "image_aspect")), (int) longValue(c, "progress", -1),
                         longValue(c, "start_ms", 0), longValue(c, "end_ms", 0), string(c, "badge"),
-                        string(c, "section"), string(c, "intent_uri"));
+                        string(c, "section"), string(c, "intent_uri"),
+                        ShelfItem.ownImage(preview, authority) ? preview : null);
                 if (item.usable()) items.add(item);
             }
         } catch (RuntimeException e) {

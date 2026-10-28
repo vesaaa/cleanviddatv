@@ -16,6 +16,8 @@ final class ShelfItem {
 
     final long id;
     final String title, subtitle, imageUri, badge, section, intentUri;
+    /** A still of the channel (16:9), shown while the card has focus; null when the app has none that is current. */
+    final String previewImageUri;
     final boolean wide;
     /** 0 to 1000, or -1 when the app has no programme guide for it. */
     final int progress;
@@ -23,6 +25,11 @@ final class ShelfItem {
 
     ShelfItem(long id, String title, String subtitle, String imageUri, boolean wide, int progress, long startMs,
               long endMs, String badge, String section, String intentUri) {
+        this(id, title, subtitle, imageUri, wide, progress, startMs, endMs, badge, section, intentUri, null);
+    }
+
+    ShelfItem(long id, String title, String subtitle, String imageUri, boolean wide, int progress, long startMs,
+              long endMs, String badge, String section, String intentUri, String previewImageUri) {
         this.id = id;
         this.title = title;
         this.subtitle = subtitle;
@@ -34,6 +41,7 @@ final class ShelfItem {
         this.badge = badge;
         this.section = section;
         this.intentUri = intentUri;
+        this.previewImageUri = previewImageUri;
     }
 
     /** A row the shelf can show: it has a title and something to open. */
