@@ -103,8 +103,14 @@ context.contentResolver.notifyChange(Uri.parse("content://$authority/items"), nu
 - `preview_uri`：焦点在卡片上停留几秒后，桌面在大图区静音播放这个频道的直播画面。
   需要先在海信电视上确认系统播放器对直播源的兼容性和内存占用。
 
-## 8. 桌面这边要做的事（CleanViddaTV）
+## 8. 桌面这边的实现（CleanViddaTV）
 
-- `<queries>` 里声明 `io.github.vesaaa.cleanviddatv.action.SHELF` 的 intent，Android 11 起才能看到别的应用的 provider。
-- 程序坞里的应用获得焦点时，如果它有 shelf provider，大图区换成卡片行；没有内容时保持现在的大字应用名。
-- 卡片行可以用方向键上移进入，左右切换，确认打开，返回键回到程序坞。
+已实现（`TopShelf`、`ShelfSource`、`ShelfItem`，开关 `top_shelf`，默认开）：
+
+- `<queries>` 声明了 `io.github.vesaaa.cleanviddatv.action.SHELF`，也按 authority 列了 VsTV 的两个包名。
+- 程序坞里的应用获得焦点时，如果它有 shelf provider 且返回了卡片，大图区换成卡片行（标题为「应用名 · shelf 标题」）；
+  没有 provider、查询失败或返回 0 行时保持原来的大字应用名。
+- 结果缓存 30 秒；回到桌面、装卸应用后重新查询；显示期间注册 ContentObserver，并在最早的 `end_ms` 后 5 秒自动重新查询。
+- 上键从程序坞进入卡片行，左右选择，确认打开，下键或返回键回到程序坞；按住左右键在两端停住。
+- 只显示 provider 自己的 `content://<authority>/image/` 图片，单张最多读 1 MB，缩到 512 像素以内。
+- 打开卡片时，Intent 的包名强制设为 provider 所在的应用，去掉 selector、ClipData 和所有 URI 授权标志。

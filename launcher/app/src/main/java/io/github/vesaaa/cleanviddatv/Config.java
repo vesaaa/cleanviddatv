@@ -163,6 +163,8 @@ final class Config {
     final boolean focusSound;
     /** The idle screensaver: SCREENSAVER_PHOTOS (pictures, slowly panned, with a small clock) or SCREENSAVER_CLOCK. */
     final String screensaverStyle;
+    /** Dock apps that publish a top shelf (docs/top-shelf.md) show its cards above the dock (config.xml top_shelf). */
+    final boolean topShelf;
     /** Remote keycodes that open Settings through HomeKeyService (config.xml, settings_key_keycodes). */
     final int[] settingsKeycodes;
     /** Extra keycodes that open the input switcher in InputKeyService (config.xml input_key_keycodes). */
@@ -285,7 +287,7 @@ final class Config {
                    boolean keyFilter, boolean dockGlass, String glowStyle, boolean wallpaperCaptions,
                    boolean handleViewInputs, boolean tileMenu, boolean dockEvenPadding, boolean dockBand, boolean cinematicDots, boolean cinematicWhiteFocus, boolean wifiStatusColor, int cinematicScrim, int cinematicArt,
                    Map<String, Set<String>> wallpaperMoods, boolean gamepadPassthrough, boolean consumeVolumeKeys, boolean powerOnHome, boolean homeLongPressHome, boolean wifiStatusWarnings, List<String> topBarApps, boolean showGreeting, boolean headerWhite, boolean clockWallpaper, int clockWallpaperDim, boolean clockGlow, String glassStyle, boolean singleRow, boolean dockBandAll, boolean lunarDate, int lunarUtcOffset, boolean dateBelowClock, boolean vpnPill, String locale, boolean powerOnHomeAlways, boolean inputsConnectedOnly, boolean softBackdrop,
-                   boolean parallaxTiles, boolean focusSound, String screensaverStyle) {
+                   boolean parallaxTiles, boolean focusSound, String screensaverStyle, boolean topShelf) {
         this.handleViewInputs = handleViewInputs;
         this.tileMenu = tileMenu;
         this.inputKeycodes = inputKeycodes;
@@ -352,6 +354,7 @@ final class Config {
         this.parallaxTiles = parallaxTiles;
         this.focusSound = focusSound;
         this.screensaverStyle = screensaverStyle;
+        this.topShelf = topShelf;
         this.settingsKeycodes = settingsKeycodes;
         this.settingsKeyPanel = settingsKeyPanel;
         this.restoreKeyServices = restoreKeyServices;
@@ -479,6 +482,7 @@ final class Config {
         boolean parallaxTiles = res.getBoolean(R.bool.parallax_tiles);
         boolean focusSound = res.getBoolean(R.bool.focus_sound);
         String screensaverStyle = res.getString(R.string.screensaver_style);
+        boolean topShelf = res.getBoolean(R.bool.top_shelf);
         int[] settingsKeycodes = res.getIntArray(R.array.settings_key_keycodes);
         boolean settingsKeyPanel = res.getBoolean(R.bool.settings_key_panel);
         boolean restoreKeyServices = res.getBoolean(R.bool.restore_key_services);
@@ -588,6 +592,7 @@ final class Config {
             parallaxTiles = bool(json, "parallax_tiles", parallaxTiles);
             focusSound = bool(json, "focus_sound", focusSound);
             screensaverStyle = string(json, "screensaver_style", screensaverStyle);
+            topShelf = bool(json, "top_shelf", topShelf);
             settingsKeycodes = intArray(json, "settings_key_keycodes", settingsKeycodes);
             settingsKeyPanel = bool(json, "settings_key_panel", settingsKeyPanel);
             restoreKeyServices = bool(json, "restore_key_services", restoreKeyServices);
@@ -720,7 +725,7 @@ final class Config {
                 consumeVolumeKeys, powerOnHome, homeLongPressHome, wifiStatusWarnings, topBarApps, showGreeting, headerWhite, clockWallpaper,
                 Math.max(0, Math.min(90, clockWallpaperDim)), clockGlow, glassStyle, singleRow && dockRow, dockBandAll, lunar, lunarOffset,
                 dateBelowClock, vpnPill, locale, powerOnHomeAlways, inputsConnectedOnly, softBackdrop,
-                parallaxTiles, focusSound, screensaverStyle);
+                parallaxTiles, focusSound, screensaverStyle, topShelf);
     }
 
     /**

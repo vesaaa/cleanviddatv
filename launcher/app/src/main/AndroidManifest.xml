@@ -35,6 +35,12 @@
     <!-- Android 11+ package visibility: lets the launcher list the TV apps it shows as tiles, and the
          apps that declare a module card (docs/specs/card.md). -->
     <queries>
+        <!-- Top shelf providers (docs/top-shelf.md); VsTV's two package names by authority as well. -->
+        <intent>
+            <action android:name="io.github.vesaaa.cleanviddatv.action.SHELF" />
+        </intent>
+        <provider android:authorities="com.vesaa.mytv.shelf" />
+        <provider android:authorities="com.chinablue.tv.shelf" />
         <!-- The standard settings handlers, so package visibility doesn't hide them and send the pills to a vendor fallback by mistake. -->
         <intent>
             <action android:name="android.settings.SETTINGS" />

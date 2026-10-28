@@ -130,6 +130,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private static final int SCROLL_MS = 280;
     /** config.xml focus_sound: the tick on a focus move and the click on OK; null when off. */
     private FocusSound focusSound;
+    /** config.xml top_shelf: the cards a dock app publishes, in the hero's place; null when off. */
+    private TopShelf topShelf;
     private String liveTvAction;
     private String liveTvInputId;
     /** The app library is on (config.xml, app_library): only then can the tile menu take an app off Home. */
@@ -364,6 +366,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())
                     && intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) return;
             // In the background this only marks the tiles stale; onResume rebuilds them once.
+            if (topShelf != null) topShelf.invalidate();
             if (!tileRefresh.onPackagesChanged()) return;
             reloadApps(false);
             if (appLibrary != null) appLibrary.refresh();
@@ -488,6 +491,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // dock_title false: the name above the dock (and the cinematic lines under it) never shows; the glow
         // still follows the dock.
         if (!cfg.dockTitle) hero.setVisibility(View.GONE);
+        if (cfg.topShelf && cfg.dockTitle && dockRow) {
+            topShelf = new TopShelf(this, root, hero, () -> focusTile(lastFocused));
+        }
         greeting = findViewById(R.id.greeting);
         clockBlock = findViewById(R.id.leftBlock);
         greetingColor = greeting.getCurrentTextColor();
@@ -989,6 +995,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onResume() {
         super.onResume();
+        // An app may have changed its shelf while it was in front (a channel watched): ask again on the next focus.
+        if (topShelf != null) topShelf.invalidate();
         // A festival that started or ended while Home was in the background: rebuild with or without it.
         if (festive != festival.active(LocalDate.now())) {
             recreate();
@@ -1104,6 +1112,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             glass.setAlpha(0f);
             heroShown = false;
             hero.setAlpha(0f);
+            if (topShelf != null) topShelf.hide();
             ambient.setAlpha(0f);
             heroArt.animate().cancel();
             heroArt.setAlpha(0f);
@@ -1265,6 +1274,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         super.onDestroy();
         alive--;
         if (focusSound != null) focusSound.release();
+        if (topShelf != null) topShelf.release();
         if (BuiltinWallpapers.onCopied == wallpapersCopied) BuiltinWallpapers.onCopied = null;
         unregisterReceiver(packageReceiver);
         wallpaperPlayer.close();
@@ -1793,6 +1803,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         float y = dockTopInRoot - 14 * density - 26 * density - hero.getHeight();
         boolean changed = !label.contentEquals(heroName.getText());
         if (cinematic && heroArtAlpha > 0f) showHeroArt(position);
+        // An app with a top shelf shows its cards over the hero's place; the hero underneath keeps its own state.
+        if (topShelf != null) topShelf.show(adapter.packageAt(position), dockTopInRoot);
 
         if (!animations || reducedMotion) {
             // Snap the shelf instead of sliding and fading it: each of those frames repaints the
@@ -2064,6 +2076,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * name above the dock does not show (every grid tile has its name underneath).
      */
     private void showGlowOnly(int position) {
+        if (topShelf != null) topShelf.hide();
         int color = adapter.ambientColorAt(position);
         stopAmbientAnimation();
         hero.animate().cancel();
@@ -2090,6 +2103,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void hideHero() {
+        if (topShelf != null) topShelf.hide();
         if (!heroShown) return;
         stopAmbientAnimation();
         hero.animate().cancel();
@@ -2313,7 +2327,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (singleRow) {
             // One row: Up leaves for the top bar, Down has nowhere to go, and Left/Right walk the whole row,
             // stopping at its two ends (the default focus search scrolls the row to the next tile).
-            if (keyCode == KeyEvent.KEYCODE_DPAD_UP) return false;
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                return topShelf != null && topShelf.focus(adapter.packageAt(position));
+            }
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) return true;
             boolean forward = rtlAppGrid ? keyCode == KeyEvent.KEYCODE_DPAD_LEFT : keyCode == KeyEvent.KEYCODE_DPAD_RIGHT;
             int last = adapter.focusablePosition(count - 1);
@@ -2337,7 +2353,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     rtlAppGrid, keyCode == KeyEvent.KEYCODE_DPAD_LEFT);
         }
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-            if (position < COLUMNS) return false;          // dock row: let focus move to the top bar
+            if (position < COLUMNS) {
+                // Dock row: into the app's top shelf when it shows one, else up to the top bar.
+                return topShelf != null && topShelf.focus(adapter.packageAt(position));
+            }
             target = position - COLUMNS;
         } else {
             int lastRowStart = ((count - 1) / COLUMNS) * COLUMNS;

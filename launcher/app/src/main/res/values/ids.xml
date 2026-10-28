@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TopShelf builds its cards in code: the rounded face of a card, found again for its focus look. -->
+    <item name="shelfFace" type="id" />
+</resources>

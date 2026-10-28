@@ -107,6 +107,7 @@ A new key needs one there in the same pull request.
 | `soft_backdrop` | bool | With no wallpaper, soft pools of blue, violet and teal light over `background_color`, like the tvOS home (`true` in CleanViddaTV) |
 | `parallax_tiles` | bool | tvOS parallax: the focused tile arrives tipped towards the key that moved focus, springs flat and sways slowly, its picture moving against the tilt (`true` in CleanViddaTV; needs `advanced_effects`, off with `reduced_motion`) |
 | `focus_sound` | bool | A short tick on each focus move between tiles and a soft click on OK (`false` by default) |
+| `top_shelf` | bool | A dock app that publishes a top shelf ([docs/top-shelf.md](../docs/top-shelf.md), e.g. VsTV's channels) shows its cards above the dock while it has focus; Up walks into them (`true` by default) |
 | `builtin_wallpapers` | bool | With no picture from the theme, the launcher's bundled wallpapers: six landscape photos, one an hour under a 25% shade with the shelf's tint and app glow off, and three soft-light fields to pick in Launcher settings (`true` in CleanViddaTV; credits in `launcher/app/src/main/assets/wallpapers/CREDITS.md`) |
 | `wallpaper` | bool | Show the theme's picture, `wallpaper.jpg` or its `wallpapers/` collection (`true`), or draw neither (`false`) |
 | `wallpaper_rotation_minutes` | 0 to 1440 | Rotate images in the theme's `wallpapers/` folder at this interval; 0 keeps the single-image behaviour. A negative or non-numeric value is ignored, and 0 means "no rotation", not "every minute" |
