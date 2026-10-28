@@ -178,17 +178,6 @@
    "thumb": "thumbs/nc-loch-tummel.webp"
   },
   {
-   "id": "nc-bluebells",
-   "title": "英国 Pryor's Wood，春天的蓝铃花林",
-   "credit": "Colin",
-   "license": "CC BY-SA 4.0",
-   "source": "https://commons.wikimedia.org/wiki/File:Pryor%27s_Wood_Bluebells_2017-04-26-4.jpg",
-   "file": "files/nc-bluebells.webp",
-   "size": 222046,
-   "sha256": "c8dc0b4a44ec2ceda104123332fa7c234806ddffae9dba14af8b61c3ce5dddb4",
-   "thumb": "thumbs/nc-bluebells.webp"
-  },
-  {
    "id": "nc-roruper-holz",
    "title": "德国 Roruper Holz，林间阳光",
    "credit": "Dietmar Rabich",
@@ -233,17 +222,6 @@
    "thumb": "thumbs/nc-kuang-si.webp"
   },
   {
-   "id": "retro-day",
-   "title": "复古 · 白天",
-   "credit": "REGT-URRED",
-   "license": "CC0 1.0",
-   "source": "themes/retro",
-   "file": "files/retro-day.webp",
-   "size": 55300,
-   "sha256": "1375f5e0814961bbb0a9febd24589ffb976429920aae4d6b0fcb110aaeb57854",
-   "thumb": "thumbs/retro-day.webp"
-  },
-  {
    "id": "retro-evening",
    "title": "复古 · 傍晚",
    "credit": "REGT-URRED",
@@ -253,17 +231,6 @@
    "size": 71168,
    "sha256": "e9d1f75803e0e334f09abb74bc1ba78dd539bc9c5c0d71a34fde5adeb484250c",
    "thumb": "thumbs/retro-evening.webp"
-  },
-  {
-   "id": "retro-night",
-   "title": "复古 · 夜晚",
-   "credit": "REGT-URRED",
-   "license": "CC0 1.0",
-   "source": "themes/retro",
-   "file": "files/retro-night.webp",
-   "size": 84566,
-   "sha256": "59086c24d2d30391de54785dce6a7ea85b880c4abb565665c19d96378bc419e8",
-   "thumb": "thumbs/retro-night.webp"
   },
   {
    "id": "aurora",
