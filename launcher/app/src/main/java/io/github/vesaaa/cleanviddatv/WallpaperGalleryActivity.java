@@ -18,6 +18,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -89,6 +90,9 @@ public class WallpaperGalleryActivity extends Activity {
             }
         });
         grid.setLayoutManager(layout);
+        // No cross-fade on a changed tile: it lays out a second copy of the tile, and with a download's progress
+        // changing it every moment the focused tile jumped between its place and another one.
+        ((SimpleItemAnimator) grid.getItemAnimator()).setSupportsChangeAnimations(false);
         grid.setAdapter(adapter);
         build();
         grid.post(this::focusCurrent);
@@ -103,6 +107,9 @@ public class WallpaperGalleryActivity extends Activity {
 
     /** The rows from what is on disk and the online index as far as it is known. */
     private void build() {
+        // The thumbnails already decoded carry over, so the tiles do not go blank while the grid is rebuilt.
+        Map<String, Bitmap> thumbs = new java.util.HashMap<>();
+        for (Row r : rows) if (r.thumb != null && key(r) != null) thumbs.put(key(r) + "\u0000" + r.file, r.thumb);
         rows.clear();
         List<File> builtins = BuiltinWallpapers.all(this);
         List<File> downloaded = OnlineWallpapers.downloaded(this);
@@ -143,6 +150,7 @@ public class WallpaperGalleryActivity extends Activity {
         rows.add(tile(getString(R.string.wallpaper_none), WallpaperRotation.CHOICE_NONE, null));
         rows.add(tile(getString(R.string.wallpaper_theme_default), THEME_DEFAULT, null));
         rows.add(tile(getString(R.string.wallpaper_credits), CREDITS, null));
+        for (Row r : rows) if (key(r) != null) r.thumb = thumbs.get(key(r) + "\u0000" + r.file);
         adapter.notifyDataSetChanged();
     }
 
@@ -272,9 +280,10 @@ public class WallpaperGalleryActivity extends Activity {
             File file = null;
             try {
                 file = OnlineWallpapers.download(this, index, r.item, percent -> runOnUiThread(() -> {
-                    r.status = getString(R.string.wallpaper_downloading, percent);
-                    int i = rows.indexOf(r);
-                    if (i >= 0) adapter.notifyItemChanged(i);
+                    String status = getString(R.string.wallpaper_downloading, percent);
+                    if (status.equals(r.status)) return;
+                    r.status = status;
+                    showStatus(r);
                 }));
             } catch (java.io.IOException e) {
                 error = String.valueOf(e.getMessage());
@@ -300,6 +309,16 @@ public class WallpaperGalleryActivity extends Activity {
                 }
             });
         });
+    }
+
+    /** The progress on a tile: only its text, without binding the tile again. */
+    private void showStatus(Row r) {
+        int i = rows.indexOf(r);
+        RecyclerView.ViewHolder vh = i < 0 ? null : grid.findViewHolderForAdapterPosition(i);
+        if (vh == null) return;   // off screen: bound with r.status when it comes back
+        TextView status = vh.itemView.findViewById(R.id.wallStatus);
+        status.setText(r.status);
+        status.setVisibility(View.VISIBLE);
     }
 
     private void confirmDelete(Row r) {

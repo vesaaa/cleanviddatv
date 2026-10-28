@@ -124,7 +124,8 @@ final class BuiltinWallpapers {
     static String label(Map<String, String> captions, File file) {
         String caption = captions.get(file.getName());
         if (caption == null) return file.getName();
-        int credit = caption.indexOf(" · ");
+        // The last " · ": an online title can have one of its own ("星空 · 湖面上的银河 · author，licence").
+        int credit = caption.lastIndexOf(" · ");
         boolean photo = file.getName().startsWith("builtin-photo-") || file.getName().startsWith(OnlineWallpapers.PREFIX);
         return credit < 0 || !photo ? caption : caption.substring(0, credit);
     }

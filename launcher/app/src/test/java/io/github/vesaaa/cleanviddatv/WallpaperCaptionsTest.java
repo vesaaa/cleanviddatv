@@ -46,4 +46,14 @@ public class WallpaperCaptionsTest {
     public void missingFolderHasNoNames() {
         assertTrue(WallpaperCaptions.read(null).isEmpty());
     }
+
+    @Test
+    public void tileLabelKeepsATitleWithItsOwnDot() {
+        Map<String, String> captions = WallpaperCaptions.parse(Arrays.asList(
+                "dl-sky-linnutee.webp\t星空 · 湖面上的银河 · Kristian Pikner，CC BY-SA 4.0",
+                "builtin-photo-03.webp\t新西兰 Mystery 湖 · Michal Klajban，CC BY-SA 4.0"));
+        assertEquals("星空 · 湖面上的银河",
+                BuiltinWallpapers.label(captions, new java.io.File("dl-sky-linnutee.webp")));
+        assertEquals("新西兰 Mystery 湖", BuiltinWallpapers.label(captions, new java.io.File("builtin-photo-03.webp")));
+    }
 }
