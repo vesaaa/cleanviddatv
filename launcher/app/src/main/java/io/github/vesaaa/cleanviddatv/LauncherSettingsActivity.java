@@ -48,7 +48,7 @@ public final class LauncherSettingsActivity extends Activity {
     private SettingsItem adbChoice;
     private SettingsItem updateChoice, updateBetaChoice;
     private SettingsItem parallaxChoice, clock24hChoice, screensaverChoice, screensaverStyleChoice;
-    private SettingsItem topShelfChoice, vstvChoice, feiniuChoice;
+    private SettingsItem topShelfChoice, shelfStyleChoice, vstvChoice, feiniuChoice;
     private boolean parallax, clock24h, topShelf;
     private static final String[] VSTV_PACKAGES = {"com.vesaa.mytv", "com.chinablue.tv"};
     private static final int[] NAV_IDS = {R.id.navLayout, R.id.navLook, R.id.navClock, R.id.navApps, R.id.navHome,
@@ -211,6 +211,13 @@ public final class LauncherSettingsActivity extends Activity {
             changed();
             refresh();
         });
+        shelfStyleChoice = findViewById(R.id.shelfStyleChoice);
+        shelfStyleChoice.setOnClickListener(v -> {
+            choices.edit().putString(Config.SHELF_STYLE_KEY, TopShelf.carouselStyle(this)
+                    ? Config.SHELF_CARDS : Config.SHELF_CAROUSEL).apply();
+            changed();
+            refresh();
+        });
         vstvChoice = findViewById(R.id.vstvChoice);
         vstvChoice.setOnClickListener(v -> openVsTv());
         feiniuChoice = findViewById(R.id.feiniuChoice);
@@ -227,7 +234,8 @@ public final class LauncherSettingsActivity extends Activity {
                     .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
                     .remove(Config.DOCK_OPACITY_KEY).remove(OpenOnStart.KEY).remove(Config.PARALLAX_KEY)
                     .remove(Config.CLOCK_24H_KEY).remove(Config.SCREENSAVER_MINUTES_KEY)
-                    .remove(Config.SCREENSAVER_STYLE_KEY).remove(Config.TOP_SHELF_KEY).commit();
+                    .remove(Config.SCREENSAVER_STYLE_KEY).remove(Config.TOP_SHELF_KEY).remove(Config.SHELF_STYLE_KEY)
+                    .commit();
             Config current = Config.load(this);
             columns = current.columns;
             rowsBelowDock = current.rowsBelowDock;
@@ -605,6 +613,9 @@ public final class LauncherSettingsActivity extends Activity {
         String wallpaperCurrent = choices.getString(Config.WALLPAPER_CHOICE_KEY, null);
         wallpaperChoice.setValue(wallpaperLabel(wallpaperCurrent), true);
         topShelfChoice.setToggle(topShelf);
+        shelfStyleChoice.setValue(getString(TopShelf.carouselStyle(this) ? R.string.shelf_style_carousel
+                : R.string.shelf_style_cards), false);
+        enable(shelfStyleChoice, topShelf);
         vstvChoice.setValue(vstvState(), false);
         feiniuChoice.setValue(feiniuState(), true);
         openOnStartChoice.setValue(openOnStartLabel(), true);
@@ -720,7 +731,8 @@ public final class LauncherSettingsActivity extends Activity {
                 || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
                 || choices.contains(OpenOnStart.KEY) || choices.contains(Config.PARALLAX_KEY)
                 || choices.contains(Config.CLOCK_24H_KEY) || choices.contains(Config.SCREENSAVER_MINUTES_KEY)
-                || choices.contains(Config.SCREENSAVER_STYLE_KEY) || choices.contains(Config.TOP_SHELF_KEY);
+                || choices.contains(Config.SCREENSAVER_STYLE_KEY) || choices.contains(Config.TOP_SHELF_KEY)
+                || choices.contains(Config.SHELF_STYLE_KEY);
     }
 
     private void open(Intent intent) {

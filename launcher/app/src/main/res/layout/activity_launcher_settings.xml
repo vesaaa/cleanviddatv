@@ -161,6 +161,13 @@
                 <TextView style="@style/SettingsHint" android:text="@string/top_shelf_hint" />
 
                 <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/shelfStyleChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/shelf_style_label" />
+
+                <TextView style="@style/SettingsHint" android:text="@string/shelf_style_hint" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
                     android:id="@+id/vstvChoice"
                     style="@style/SettingsRow"
                     android:layout_marginTop="20dp"

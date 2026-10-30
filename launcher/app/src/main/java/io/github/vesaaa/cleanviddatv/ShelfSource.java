@@ -136,6 +136,14 @@ final class ShelfSource {
 
     /** One image, decoded to about maxPx on its longer side. Blocking; null on any failure or an image over 1 MB. */
     static Bitmap image(ContentResolver cr, String uri, int maxPx) {
+        return image(cr, uri, maxPx, false);
+    }
+
+    /**
+     * As above; opaque decodes to RGB_565, half the memory, for a picture that fills the screen and has no
+     * transparency (a backdrop).
+     */
+    static Bitmap image(ContentResolver cr, String uri, int maxPx, boolean opaque) {
         if (uri == null) return null;
         try {
             Uri u = Uri.parse(uri);
@@ -150,6 +158,7 @@ final class ShelfSource {
             while (Math.max(bounds.outWidth, bounds.outHeight) / (sample * 2) >= maxPx) sample *= 2;
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = sample;
+            if (opaque) options.inPreferredConfig = Bitmap.Config.RGB_565;
             try (InputStream in = cr.openInputStream(u)) {
                 if (in == null) return null;
                 return BitmapFactory.decodeStream(new LimitedStream(in, IMAGE_MAX_BYTES), null, options);

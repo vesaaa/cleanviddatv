@@ -231,6 +231,11 @@
     <string name="follow_theme_value_reset">重置</string>
     <string name="top_shelf_label">顶部展示区</string>
     <string name="top_shelf_hint">焦点停在程序坞的应用上时，在上方显示它提供的内容卡片，按上键进入。</string>
+    <string name="shelf_style_label">展示样式</string>
+    <string name="shelf_style_cards">卡片</string>
+    <string name="shelf_style_carousel">大图轮播</string>
+    <string name="shelf_style_hint">大图轮播：焦点停在应用上时整屏轮换剧集大图、Logo 和剧情介绍，按上键全屏浏览；只用于有刮削大图的应用（飞牛影视），其他应用仍显示卡片。登录飞牛影视后默认大图轮播。</string>
+    <string name="carousel_hint">确认键在%1$s中打开 · 左右键切换 · 返回键退出</string>
     <string name="vstv_label">VsTV</string>
     <string name="vstv_hint">显示最近观看和收藏的频道，以及正在播出的节目。需要 VsTV 2.7.15 或更新版本。</string>
     <string name="vstv_connected">已接入</string>

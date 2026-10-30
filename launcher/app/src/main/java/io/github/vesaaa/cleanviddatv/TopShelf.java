@@ -109,8 +109,23 @@ final class TopShelf {
     private int focusIndex;
     private ContentObserver observer;
     private final Runnable refresh = () -> load(true);
+    /** The carousel (展示样式 大图轮播), or null for cards only; carouselOn while it stands in for the row. */
+    private final ShelfCarousel carousel;
+    private boolean carouselOn;
 
-    TopShelf(Activity activity, FrameLayout root, View hero, Host host, boolean parallax) {
+    /**
+     * The 展示样式 choice: 大图轮播 (a carousel, for shelves with artwork) or 卡片 (the row). Until it is chosen, a
+     * carousel once a 飞牛影视 account is signed in, since that is the shelf with artwork to show.
+     */
+    static boolean carouselStyle(android.content.Context ctx) {
+        String style = ctx.getSharedPreferences(Config.SETTINGS_NAME, android.content.Context.MODE_PRIVATE)
+                .getString(Config.SHELF_STYLE_KEY, null);
+        if (Config.SHELF_CAROUSEL.equals(style)) return true;
+        if (Config.SHELF_CARDS.equals(style)) return false;
+        return Feiniu.signedIn(ctx);
+    }
+
+    TopShelf(Activity activity, FrameLayout root, View hero, Host host, boolean parallax, boolean carouselStyle) {
         this.activity = activity;
         this.hero = hero;
         this.host = host;
@@ -136,6 +151,18 @@ final class TopShelf {
                 ViewGroup.LayoutParams.MATCH_PARENT));
         root.addView(backdrop, root.indexOfChild(hero), new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
+
+        carousel = carouselStyle ? new ShelfCarousel(activity, root, root.indexOfChild(hero), new ShelfCarousel.Host() {
+            @Override
+            public void open(ShelfItem item) {
+                TopShelf.this.open(item);
+            }
+
+            @Override
+            public void returnToDock() {
+                TopShelf.this.host.returnToDock();
+            }
+        }, images::get) : null;
 
         glow = new View(activity);
         glowShape.setGradientType(GradientDrawable.RADIAL_GRADIENT);
@@ -242,7 +269,8 @@ final class TopShelf {
             return false;
         }
         if (packageName.equals(pkg)) {
-            if (shown) place();
+            if (shown && carouselOn) carousel.place(bottomY);
+            else if (shown) place();
             Long at = cachedAt.get(packageName);
             if (at == null || System.currentTimeMillis() - at > FRESH_MS) load(false);
             return true;
@@ -265,6 +293,12 @@ final class TopShelf {
         pkg = null;
         if (!shown) return;
         shown = false;
+        if (carouselOn) {
+            carouselOn = false;
+            carousel.hide();
+            hero.setVisibility(View.VISIBLE);
+            return;
+        }
         panel.animate().cancel();
         panel.setAlpha(0f);
         panel.setVisibility(View.GONE);
@@ -275,18 +309,21 @@ final class TopShelf {
 
     /** Up from the dock tile of this app: focus its row when it shows cards. */
     boolean focus(String packageName) {
-        if (!shown || packageName == null || !packageName.equals(pkg) || row.getChildCount() == 0) return false;
+        if (!shown || packageName == null || !packageName.equals(pkg)) return false;
+        if (carouselOn) return carousel.enterFullScreen();
+        if (row.getChildCount() == 0) return false;
         View card = cardAt(Math.min(focusIndex, cardCount() - 1));
         return card != null && card.requestFocus();
     }
 
     boolean hasFocus() {
-        return shown && panel.hasFocus();
+        return shown && (panel.hasFocus() || carouselOn && carousel.hasFocus());
     }
 
     void release() {
         hide();
         worker.shutdownNow();
+        if (carousel != null) carousel.release();
         backdropWorker.shutdownNow();
         for (ImageView layer : backdropLayers) layer.setImageDrawable(null);
         for (Bitmap b : backdropBitmaps) if (b != null) b.recycle();
@@ -393,6 +430,27 @@ final class TopShelf {
     // ---- the row ---------------------------------------------------------------------------------------------
 
     private void bind(List<ShelfItem> items) {
+        List<ShelfItem> titles = carousel == null ? null : ShelfCarousel.titles(items);
+        if (titles != null && !titles.isEmpty()) {
+            // 大图轮播: the carousel stands in for the row, which stays hidden.
+            row.setTag(items);
+            if (shown && !carouselOn) {
+                panel.setVisibility(View.GONE);
+                panel.setAlpha(0f);
+                hideGlow();
+                hideBackdrop();
+            }
+            carouselOn = true;
+            shown = true;
+            hero.setVisibility(View.INVISIBLE);
+            carousel.bind(titles, bottomY, appLabel(pkg));
+            return;
+        }
+        if (carouselOn) {
+            carouselOn = false;
+            shown = false;
+            carousel.hide();
+        }
         boolean hadFocus = panel.hasFocus();
         row.removeAllViews();
         row.setTag(items);
@@ -425,9 +483,15 @@ final class TopShelf {
 
     /** The app has nothing to show now: back to the hero, keeping focus on the dock if it was in the row. */
     private void unbind() {
-        boolean hadFocus = panel.hasFocus();
+        boolean hadFocus = panel.hasFocus() || carouselOn && carousel.hasFocus();
         row.removeAllViews();
         row.setTag(null);
+        if (carouselOn) {
+            carouselOn = false;
+            shown = false;
+            carousel.hide();
+            hero.setVisibility(View.VISIBLE);
+        }
         if (shown) {
             shown = false;
             panel.animate().cancel();
@@ -735,7 +799,7 @@ final class TopShelf {
         }
         ContentResolver cr = activity.getContentResolver();
         backdropWorker.execute(() -> {
-            Bitmap big = ShelfSource.image(cr, uri, BACKDROP_MAX_PX);
+            Bitmap big = ShelfSource.image(cr, uri, BACKDROP_MAX_PX, true);
             handler.post(() -> {
                 if (big == null || activity.isDestroyed() || !uri.equals(backdropUri)) {
                     if (big != null) big.recycle();
@@ -867,14 +931,19 @@ final class TopShelf {
     /** The dock app's name (not the provider's: the launcher's own provider speaks for 飞牛影视) and the shelf's title. */
     private String headingFor(String packageName, ProviderInfo provider) {
         PackageManager pm = activity.getPackageManager();
-        CharSequence app;
-        try {
-            app = pm.getApplicationLabel(pm.getApplicationInfo(packageName, 0));
-        } catch (PackageManager.NameNotFoundException e) {
-            app = provider.applicationInfo.loadLabel(pm);
-        }
+        CharSequence app = appLabel(packageName);
+        if (app == null) app = provider.applicationInfo.loadLabel(pm);
         String title = ShelfSource.title(activity.getPackageManager(), provider);
         return title == null || title.trim().isEmpty() ? app.toString() : app + " · " + title.trim();
+    }
+
+    private String appLabel(String packageName) {
+        PackageManager pm = activity.getPackageManager();
+        try {
+            return pm.getApplicationLabel(pm.getApplicationInfo(packageName, 0)).toString();
+        } catch (PackageManager.NameNotFoundException | RuntimeException e) {
+            return null;
+        }
     }
 
     private void font(TextView view, int res) {

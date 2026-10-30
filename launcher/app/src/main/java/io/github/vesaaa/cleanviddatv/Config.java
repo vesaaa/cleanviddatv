@@ -45,6 +45,8 @@ final class Config {
     /** Launcher settings choices (视差效果, 24 小时制, 屏保, 顶部展示区); a theme push or reset clears them with the others. */
     static final String PARALLAX_KEY = "parallax_tiles", CLOCK_24H_KEY = "clock_24h", TOP_SHELF_KEY = "top_shelf";
     static final String SCREENSAVER_MINUTES_KEY = "screensaver_minutes", SCREENSAVER_STYLE_KEY = "screensaver_style";
+    /** Launcher settings 展示样式: the top shelf as cards or as a carousel; unset follows TopShelf.carouselStyle. */
+    static final String SHELF_STYLE_KEY = "shelf_style", SHELF_CARDS = "cards", SHELF_CAROUSEL = "carousel";
     static final String SCREENSAVER_PHOTOS = "photos", SCREENSAVER_CLOCK = "clock";
     static final String DOCK_OPACITY_KEY = "dock_opacity";
     /**

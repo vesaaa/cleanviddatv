@@ -141,3 +141,6 @@ context.contentResolver.notifyChange(Uri.parse("content://$authority/items"), nu
   背景图、Logo 和剧情介绍取自电影或剧集（剧集的单集往上找到整部剧）刮削的资料，按本接口的列返回卡片，
   图片也经它缓存后提供；`ShelfSource` 把它当作名字里带「飞牛」的那个应用的 provider，所以卡片打开的是飞牛影视。
   接口和签名（Authx）来自基于飞牛影视的开源客户端，不是官方公开接口，签名密钥可以在设置里替换。
+- **展示样式**（设置 → 应用联动）：选「大图轮播」时，每张卡片都有 `backdrop_uri` 的应用不显示卡片行，改成 tvOS 式轮播
+  （`ShelfCarousel`）：焦点在程序坞图标上时整屏轮换背景图，显示 `logo_uri`（没有时 `title`）、`subtitle`、`overview` 和页码圆点，
+  8 秒换一张；按上键全屏，左右切换，确认键按该卡片的 `intent_uri` 打开。缺背景图的应用照旧显示卡片。

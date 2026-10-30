@@ -505,7 +505,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 public void focusTopBar(View from) {
                     MainActivity.this.focusTopBar(from);
                 }
-            }, cfg.parallaxTiles && advancedEffects && !reducedMotion);
+            }, cfg.parallaxTiles && advancedEffects && !reducedMotion, TopShelf.carouselStyle(this));
         }
         greeting = findViewById(R.id.greeting);
         clockBlock = findViewById(R.id.leftBlock);
