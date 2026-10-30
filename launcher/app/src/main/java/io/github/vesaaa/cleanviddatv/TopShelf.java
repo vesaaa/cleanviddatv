@@ -87,6 +87,10 @@ final class TopShelf {
     private final FrameLayout backdrop;
     private final ImageView[] backdropLayers = new ImageView[2];
     private final View backdropShade;
+    /** The focused title's logo (or its name) and synopsis, over the backdrop in the heading's place. */
+    private final LinearLayout info;
+    private final ImageView infoLogo;
+    private final TextView infoTitle, infoText;
     private int backdropFront;
     private String backdropUri;
     private Bitmap[] backdropBitmaps = new Bitmap[2];
@@ -151,16 +155,52 @@ final class TopShelf {
         panel.setClipChildren(false);
         panel.setClipToPadding(false);
 
+        // Above the row: the app's name, or - over a backdrop - the focused title's logo and synopsis in its place.
+        // A fixed height, so the row does not move when one replaces the other.
+        FrameLayout header = new FrameLayout(activity);
         heading = new TextView(activity);
         heading.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
         heading.setTextColor(0xCCFFFFFF);
         heading.setSingleLine(true);
         font(heading, R.string.font_medium);
-        LinearLayout.LayoutParams hp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
+        header.addView(heading, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.START));
+        info = new LinearLayout(activity);
+        info.setOrientation(LinearLayout.HORIZONTAL);
+        info.setGravity(Gravity.CENTER_VERTICAL);
+        info.setAlpha(0f);
+        info.setVisibility(View.GONE);
+        infoLogo = new ImageView(activity);
+        infoLogo.setAdjustViewBounds(true);
+        infoLogo.setMaxHeight(dp(60));
+        infoLogo.setMaxWidth(dp(300));
+        infoLogo.setScaleType(ImageView.ScaleType.FIT_START);
+        info.addView(infoLogo, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        infoTitle = new TextView(activity);
+        infoTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+        infoTitle.setTextColor(0xFFFFFFFF);
+        infoTitle.setSingleLine(true);
+        font(infoTitle, R.string.font_medium);
+        info.addView(infoTitle, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        infoText = new TextView(activity);
+        infoText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+        infoText.setTextColor(0xD9FFFFFF);
+        infoText.setMaxLines(2);
+        infoText.setEllipsize(TextUtils.TruncateAt.END);
+        infoText.setLineSpacing(0, 1.15f);
+        // The synopsis takes what the logo leaves, up to the hero's right edge.
+        LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        tp.setMarginStart(dp(28));
+        info.addView(infoText, tp);
+        info.setPaddingRelative(0, 0, dp(68), 0);
+        header.addView(info, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.START));
+        LinearLayout.LayoutParams hp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(64));
         hp.setMarginStart(dp(68));
         hp.bottomMargin = dp(6);
-        panel.addView(heading, hp);
+        panel.addView(header, hp);
 
         scroller = new HorizontalScrollView(activity);
         scroller.setHorizontalScrollBarEnabled(false);
@@ -267,7 +307,7 @@ final class TopShelf {
             List<ShelfItem> items = ShelfSource.query(cr, authority);
             Map<String, Bitmap> loaded = new HashMap<>();
             for (ShelfItem item : items) {
-                for (String uri : new String[]{item.imageUri, item.previewImageUri}) {
+                for (String uri : new String[]{item.imageUri, item.previewImageUri, item.logoUri}) {
                     if (uri == null || images.containsKey(uri) || loaded.containsKey(uri)) continue;
                     loaded.put(uri, ShelfSource.image(cr, uri));
                 }
@@ -297,6 +337,7 @@ final class TopShelf {
             for (ShelfItem item : list) {
                 used.add(item.imageUri);
                 used.add(item.previewImageUri);
+                used.add(item.logoUri);
             }
         }
         images.keySet().retainAll(used);
@@ -309,7 +350,9 @@ final class TopShelf {
             ShelfItem a = current.get(i), b = items.get(i);
             if (a.id != b.id || !TextUtils.equals(a.title, b.title) || !TextUtils.equals(a.subtitle, b.subtitle)
                     || a.startMs != b.startMs || !TextUtils.equals(a.imageUri, b.imageUri)
-                    || !TextUtils.equals(a.previewImageUri, b.previewImageUri)) return true;
+                    || !TextUtils.equals(a.previewImageUri, b.previewImageUri)
+                    || !TextUtils.equals(a.backdropUri, b.backdropUri) || !TextUtils.equals(a.logoUri, b.logoUri)
+                    || !TextUtils.equals(a.overview, b.overview)) return true;
         }
         return false;
     }
@@ -616,10 +659,10 @@ final class TopShelf {
         if (focused) {
             Object color = cell.getTag(R.id.shelfFace);
             ShelfItem item = index < shownItems().size() ? shownItems().get(index) : null;
-            String picture = item == null ? null : item.previewImageUri != null ? item.previewImageUri
-                    : item.wide ? item.imageUri : null;
-            if (picture != null && images.get(picture) != null) {
+            String picture = item == null ? null : item.backdropPicture();
+            if (picture != null) {
                 showBackdrop(picture);
+                showInfo(item);
                 hideGlow();
             } else {
                 hideBackdrop();
@@ -682,7 +725,9 @@ final class TopShelf {
             return;
         }
         backdropUri = uri;
-        setBackdropLayer(images.get(uri), false);
+        // A still the card already holds shows at once; artwork made for the backdrop comes in at screen size.
+        Bitmap small = images.get(uri);
+        if (small != null) setBackdropLayer(small, null);
         if (backdrop.getVisibility() != View.VISIBLE) {
             backdrop.setVisibility(View.VISIBLE);
             backdrop.animate().cancel();
@@ -696,7 +741,7 @@ final class TopShelf {
                     if (big != null) big.recycle();
                     return;
                 }
-                setBackdropLayer(big, true);
+                setBackdropLayer(big, small == null ? Boolean.FALSE : Boolean.TRUE);
             });
         });
     }
@@ -705,7 +750,10 @@ final class TopShelf {
      * Cross-fades to a picture. A sharp copy of the one already shown replaces it without a fade, and is the only kind
      * the backdrop owns (the small ones belong to the cards' cache).
      */
-    private void setBackdropLayer(Bitmap bitmap, boolean owned) {
+    private void setBackdropLayer(Bitmap bitmap, Boolean sharpCopy) {
+        // null: a card's own small picture (not ours to recycle), cross-faded in; TRUE: the sharp copy of the picture
+        // already shown, swapped in place; FALSE: a sharp picture with nothing shown before it, cross-faded in.
+        boolean owned = sharpCopy != null, instant = Boolean.TRUE.equals(sharpCopy);
         if (bitmap == null) return;
         int next = 1 - backdropFront;
         ImageView in = backdropLayers[next], out = backdropLayers[backdropFront];
@@ -717,7 +765,7 @@ final class TopShelf {
         out.animate().cancel();
         in.bringToFront();
         backdropShade.bringToFront();   // the shade stays on top
-        if (owned) {
+        if (instant) {
             in.setAlpha(1f);
             out.setAlpha(0f);
         } else {
@@ -728,7 +776,38 @@ final class TopShelf {
         backdropFront = next;
     }
 
+    /** The focused title's logo (or name) and synopsis in the heading's place; the heading when it has neither. */
+    private void showInfo(ShelfItem item) {
+        Bitmap logo = item.logoUri == null ? null : images.get(item.logoUri);
+        if (logo == null && item.overview == null) {
+            hideInfo();
+            return;
+        }
+        infoLogo.setImageBitmap(logo);
+        infoLogo.setVisibility(logo == null ? View.GONE : View.VISIBLE);
+        infoTitle.setText(item.title);
+        infoTitle.setVisibility(logo == null ? View.VISIBLE : View.GONE);
+        infoText.setText(item.overview);
+        infoText.setVisibility(item.overview == null ? View.GONE : View.VISIBLE);
+        info.setVisibility(View.VISIBLE);
+        info.animate().cancel();
+        info.setAlpha(0f);
+        info.animate().alpha(1f).setDuration(320).start();
+        heading.animate().cancel();
+        heading.animate().alpha(0f).setDuration(160).start();
+    }
+
+    private void hideInfo() {
+        info.animate().cancel();
+        info.setAlpha(0f);
+        info.setVisibility(View.GONE);
+        infoLogo.setImageDrawable(null);
+        heading.animate().cancel();
+        heading.animate().alpha(1f).setDuration(200).start();
+    }
+
     private void hideBackdrop() {
+        hideInfo();
         backdropUri = null;
         if (backdrop.getVisibility() != View.VISIBLE) return;
         backdrop.animate().cancel();

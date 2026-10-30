@@ -35,18 +35,20 @@ import java.util.concurrent.TimeUnit;
 public final class FeiniuShelfProvider extends ContentProvider {
 
     private static final String[] COLUMNS = {"_id", "title", "subtitle", "image_uri", "image_aspect", "progress",
-            "badge", "section", "intent_uri"};
+            "badge", "section", "intent_uri", "backdrop_uri", "logo_uri", "overview"};
     /** The server's lists are read again after this long; TopShelf adds its own 30 s cache on top. */
     private static final long FRESH_MS = 60_000L;
-    /** Wide enough to fill the screen behind the row (TopShelf's backdrop); the cards decode it smaller. */
-    private static final int IMAGE_WIDTH = 1280, IMAGE_FILES = 80, FETCH_THREADS = 6;
+    /** Widths the server scales the pictures to: a card, the full-screen backdrop, a title logo. */
+    private static final int CARD_WIDTH = 640, BACKDROP_WIDTH = 1920, LOGO_WIDTH = 480;
+    private static final int IMAGE_FILES = 60, FETCH_THREADS = 6;
+    private static final Feiniu.Art NO_ART = new Feiniu.Art(null, null, null, null);
 
     private final Object lock = new Object();
     private List<Object[]> rows;
     private long rowsAt;
     private String rowsFor;
-    /** guid to a wide backdrop path ("" when the item has none), so a portrait poster is swapped only once. */
-    private final Map<String, String> backdrops = new HashMap<>();
+    /** guid to what the server scraped for it (NO_ART when it has nothing), so each item is asked once. */
+    private final Map<String, Feiniu.Art> arts = new HashMap<>();
 
     static String authority(Context ctx) {
         return ctx.getPackageName() + ".feiniu";
@@ -130,24 +132,18 @@ public final class FeiniuShelfProvider extends ContentProvider {
         } catch (IOException e) {
             return null;
         }
-        // The backdrops and the pictures are fetched side by side: one after another, a first shelf of twelve cards
-        // took ten seconds and more on the TV.
+        // The artwork and the pictures are fetched side by side: one after another, a first shelf took ten
+        // seconds and more on the TV.
         List<FeiniuEntry.Pick> picks = FeiniuEntry.cards(playing, added);
-        String[] images = new String[picks.size()];
+        Object[][] out = new Object[picks.size()][];
         ExecutorService pool = Executors.newFixedThreadPool(FETCH_THREADS, r -> new Thread(r, "feiniu-shelf"));
         try {
             List<Future<?>> jobs = new ArrayList<>();
             for (int i = 0; i < picks.size(); i++) {
                 final int index = i;
-                FeiniuEntry e = picks.get(i).entry;
+                FeiniuEntry.Pick pick = picks.get(i);
                 jobs.add(pool.submit(() -> {
-                    String image = e.poster.isEmpty() ? null : e.poster;
-                    if (!e.widePoster()) {
-                        String wide = backdrop(client, e.isEpisode() ? null : e.guid);
-                        if (wide != null) image = wide;
-                    }
-                    images[index] = image;
-                    if (image != null) cached(ctx, image);
+                    out[index] = row(ctx, client, pick, intentUri);
                     return null;
                 }));
             }
@@ -155,87 +151,116 @@ public final class FeiniuShelfProvider extends ContentProvider {
                 try {
                     job.get(20, TimeUnit.SECONDS);
                 } catch (Exception ignored) {
-                    // that card shows without its picture, or fetches it when TopShelf opens it
+                    // that card is left out this time
                 }
             }
         } finally {
             pool.shutdownNow();
         }
-        List<Object[]> out = new ArrayList<>();
-        for (int i = 0; i < picks.size(); i++) {
-            FeiniuEntry.Pick pick = picks.get(i);
-            FeiniuEntry e = pick.entry;
-            out.add(new Object[]{e.rowId(), e.showTitle(), pick.playing ? e.playingSubtitle() : e.addedSubtitle(),
-                    images[i] == null ? null : imageUri(ctx, images[i]), "wide", pick.playing ? e.progress() : -1,
-                    pick.playing ? null : "新增", pick.playing ? FeiniuEntry.SECTION_PLAYING : FeiniuEntry.SECTION_ADDED,
-                    intentUri});
-        }
-        return out;
+        List<Object[]> cards = new ArrayList<>();
+        for (Object[] row : out) if (row != null) cards.add(row);
+        return cards;
     }
 
-    private String backdrop(Feiniu.Client client, String guid) {
-        if (guid == null || guid.isEmpty()) return null;
+    /**
+     * One card. The card shows an episode's still (or a film's or series' backdrop); behind the row goes the scraped
+     * backdrop of the film or of the episode's series, never a still blown up, with its logo and synopsis. A plain
+     * video file has none of these and gets the glow instead. The pictures are fetched here, so the shelf opens at once.
+     */
+    private Object[] row(Context ctx, Feiniu.Client client, FeiniuEntry.Pick pick, String intentUri) {
+        FeiniuEntry e = pick.entry;
+        Feiniu.Art art = showArt(client, e);
+        String card = e.isEpisode() && e.widePoster() ? e.poster : art.backdrop != null ? art.backdrop
+                : e.poster.isEmpty() ? null : e.poster;
+        String cardUri = picture(ctx, card, CARD_WIDTH);
+        String backdropUri = picture(ctx, art.backdrop, BACKDROP_WIDTH);
+        String logoUri = picture(ctx, art.logo, LOGO_WIDTH);
+        return new Object[]{e.rowId(), e.showTitle(), pick.playing ? e.playingSubtitle() : e.addedSubtitle(),
+                cardUri, "wide", pick.playing ? e.progress() : -1, pick.playing ? null : "新增",
+                pick.playing ? FeiniuEntry.SECTION_PLAYING : FeiniuEntry.SECTION_ADDED, intentUri, backdropUri, logoUri,
+                art.overview};
+    }
+
+    /** The art of a film or series as it is; an episode's is its series' (episode, then season, then series). */
+    private Feiniu.Art showArt(Feiniu.Client client, FeiniuEntry e) {
+        if ("Video".equalsIgnoreCase(e.type)) return NO_ART;
+        if (!e.isEpisode()) return art(client, e.guid);
+        Feiniu.Art season = art(client, e.parentGuid);
+        return season.parent == null ? NO_ART : art(client, season.parent);
+    }
+
+    private Feiniu.Art art(Feiniu.Client client, String guid) {
+        if (guid == null || guid.isEmpty()) return NO_ART;
         synchronized (lock) {
-            if (backdrops.containsKey(guid)) {
-                String b = backdrops.get(guid);
-                return b == null || b.isEmpty() ? null : b;
-            }
+            Feiniu.Art known = arts.get(guid);
+            if (known != null) return known;
         }
-        String b;
+        Feiniu.Art art;
         try {
-            b = client.backdrop(guid);
+            art = client.art(guid);
         } catch (IOException e) {
-            return null;     // try again next time
+            return NO_ART;     // asked again next time
         }
         synchronized (lock) {
-            backdrops.put(guid, b == null ? "" : b);
+            arts.put(guid, art);
         }
-        return b;
+        return art;
     }
 
-    private static String imageUri(Context ctx, String serverPath) {
+    /** The picture's content URI, fetched into the cache first; null without one or when it cannot be fetched. */
+    private static String picture(Context ctx, String serverPath, int width) {
+        if (serverPath == null) return null;
+        try {
+            cached(ctx, serverPath, width);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
         String id = Base64.encodeToString(serverPath.getBytes(StandardCharsets.UTF_8),
                 Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
-        return "content://" + authority(ctx) + "/image/" + id;
+        return "content://" + authority(ctx) + "/image/" + width + "/" + id;
     }
 
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
         Context ctx = getContext();
         List<String> segments = uri.getPathSegments();
-        if (ctx == null || !"r".equals(mode) || segments.size() != 2 || !"image".equals(segments.get(0))) {
+        if (ctx == null || !"r".equals(mode) || segments.size() != 3 || !"image".equals(segments.get(0))) {
             throw new FileNotFoundException(uri.toString());
         }
+        int width;
         String serverPath;
         try {
-            serverPath = new String(Base64.decode(segments.get(1), Base64.URL_SAFE), StandardCharsets.UTF_8);
+            width = Integer.parseInt(segments.get(1));
+            serverPath = new String(Base64.decode(segments.get(2), Base64.URL_SAFE), StandardCharsets.UTF_8);
         } catch (IllegalArgumentException e) {
             throw new FileNotFoundException(uri.toString());
         }
-        if (!serverPath.startsWith("/") || serverPath.contains("..") || serverPath.contains("?")) {
+        if (width != CARD_WIDTH && width != BACKDROP_WIDTH && width != LOGO_WIDTH || !serverPath.startsWith("/")
+                || serverPath.contains("..") || serverPath.contains("?")) {
             throw new FileNotFoundException(uri.toString());
         }
-        return ParcelFileDescriptor.open(cached(ctx, serverPath), ParcelFileDescriptor.MODE_READ_ONLY);
+        return ParcelFileDescriptor.open(cached(ctx, serverPath, width), ParcelFileDescriptor.MODE_READ_ONLY);
     }
 
     /** The picture's file in the cache, fetched from the server first when it is not there yet. */
-    private static File cached(Context ctx, String serverPath) throws FileNotFoundException {
+    private static File cached(Context ctx, String serverPath, int width) throws FileNotFoundException {
         File dir = new File(ctx.getCacheDir(), "feiniu");
-        File file = new File(dir, Feiniu.md5(serverPath + "@" + IMAGE_WIDTH) + ".img");
-        if (!file.isFile()) fetch(ctx, serverPath, dir, file);
+        File file = new File(dir, Feiniu.md5(serverPath + "@" + width) + ".img");
+        if (!file.isFile()) fetch(ctx, serverPath, width, dir, file);
         return file;
     }
 
-    private static void fetch(Context ctx, String serverPath, File dir, File file) throws FileNotFoundException {
+    private static void fetch(Context ctx, String serverPath, int width, File dir, File file)
+            throws FileNotFoundException {
         Feiniu.Client client = Feiniu.client(ctx);
         if (client == null) throw new FileNotFoundException("signed out");
         byte[] bytes;
         try {
             try {
-                bytes = client.image(serverPath, IMAGE_WIDTH);
+                bytes = client.image(serverPath, width);
             } catch (Feiniu.ApiException e) {
                 if (!e.authFailed() || !Feiniu.renew(ctx, client)) throw e;
-                bytes = client.image(serverPath, IMAGE_WIDTH);
+                bytes = client.image(serverPath, width);
             }
         } catch (IOException e) {
             throw new FileNotFoundException(e.getMessage());

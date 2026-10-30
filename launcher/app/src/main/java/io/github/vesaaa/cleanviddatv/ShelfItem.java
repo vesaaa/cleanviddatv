@@ -8,8 +8,8 @@ import java.util.List;
  */
 final class ShelfItem {
 
-    /** The most rows a shelf shows; the rest are dropped. */
-    static final int MAX = 12;
+    /** The most rows a shelf shows; the rest are dropped. Six keep the first load and the memory small. */
+    static final int MAX = 6;
     /** After the earliest programme ends, wait this long before asking the app again. */
     static final long REFRESH_SLACK_MS = 5_000L;
     static final String SECTION_RECENT = "recent", SECTION_FAVORITE = "favorite";
@@ -18,6 +18,11 @@ final class ShelfItem {
     final String title, subtitle, imageUri, badge, section, intentUri;
     /** A still of the channel (16:9), shown while the card has focus; null when the app has none that is current. */
     final String previewImageUri;
+    /**
+     * Artwork for the whole screen behind the row while the card has focus (16:9, about 1920 px), the title's logo
+     * (transparent) and a line or two about it; each null when the app gives none.
+     */
+    String backdropUri, logoUri, overview;
     final boolean wide;
     /** 0 to 1000, or -1 when the app has no programme guide for it. */
     final int progress;
@@ -42,6 +47,11 @@ final class ShelfItem {
         this.section = section;
         this.intentUri = intentUri;
         this.previewImageUri = previewImageUri;
+    }
+
+    /** The picture behind the row while this card has focus: its artwork, else the channel's still. */
+    String backdropPicture() {
+        return backdropUri != null ? backdropUri : previewImageUri;
     }
 
     /** A row the shelf can show: it has a title and something to open. */

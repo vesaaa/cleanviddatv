@@ -100,6 +100,11 @@ final class ShelfSource {
                         longValue(c, "start_ms", 0), longValue(c, "end_ms", 0), string(c, "badge"),
                         string(c, "section"), string(c, "intent_uri"),
                         ShelfItem.ownImage(preview, authority) ? preview : null);
+                String backdrop = string(c, "backdrop_uri"), logo = string(c, "logo_uri");
+                item.backdropUri = ShelfItem.ownImage(backdrop, authority) ? backdrop : null;
+                item.logoUri = ShelfItem.ownImage(logo, authority) ? logo : null;
+                String overview = string(c, "overview");
+                item.overview = overview == null || overview.trim().isEmpty() ? null : overview.trim();
                 if (item.usable()) items.add(item);
             }
         } catch (RuntimeException e) {

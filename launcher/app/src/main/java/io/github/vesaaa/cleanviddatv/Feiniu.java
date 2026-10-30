@@ -257,12 +257,12 @@ final class Feiniu {
             return entries(list == null ? new JSONArray() : list);
         }
 
-        /** A film's or series' wide backdrop, or null when it has none. */
-        String backdrop(String guid) throws IOException {
+        /** An item's scraped artwork and text, and its parent (a season's series, an episode's season). */
+        Art art(String guid) throws IOException {
             Object data = call(PATH + "/api/v1/item/" + guid, null);
-            if (!(data instanceof JSONObject)) return null;
-            String b = ((JSONObject) data).optString("backdrops", "");
-            return b.isEmpty() ? null : b;
+            if (!(data instanceof JSONObject)) return new Art(null, null, null, null);
+            JSONObject o = (JSONObject) data;
+            return new Art(text(o, "backdrops"), text(o, "logos"), text(o, "overview"), text(o, "parent_guid"));
         }
 
         /** A poster or still from the server, scaled there to about this width. */
@@ -278,6 +278,24 @@ final class Feiniu {
                 c.disconnect();
             }
         }
+    }
+
+    /** What the server scraped for a film, a series or a season; each part null when it has none. */
+    static final class Art {
+        final String backdrop, logo, overview, parent;
+
+        Art(String backdrop, String logo, String overview, String parent) {
+            this.backdrop = backdrop;
+            this.logo = logo;
+            this.overview = overview;
+            this.parent = parent;
+        }
+    }
+
+    private static String text(JSONObject o, String key) {
+        if (o.isNull(key)) return null;
+        String v = o.optString(key, "").trim();
+        return v.isEmpty() ? null : v;
     }
 
     /** Signs in and returns the token. */

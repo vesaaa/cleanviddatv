@@ -6,7 +6,7 @@ CleanViddaTV 的焦点停在程序坞里某个应用上时，上方大图区（h
 接口是一个**只读的 ContentProvider**，由应用提供，桌面来读。桌面不联网、不解析直播源，所有内容都由应用自己准备好。
 任何应用都可以按这个接口接入，桌面不认包名。
 
-版本：1.1（2026-10-28）。1.1 新增可选列 `preview_image_uri`，旧的应用不给这一列也照常工作。
+版本：1.2（2026-10-30）。1.1 新增可选列 `preview_image_uri`；1.2 新增可选列 `backdrop_uri`、`logo_uri`、`overview`，并把每行最多卡片数从 12 改为 6。旧的应用不给这些列也照常工作。
 
 ## 1. 应用如何声明
 
@@ -38,7 +38,7 @@ content://<authority>/items
 ```
 
 `query(uri, projection, selection, selectionArgs, sortOrder)`：桌面只传 uri，其余参数都是 null。
-按应该显示的顺序返回，**最多 12 行**，多余的桌面会丢掉。返回 0 行表示没有内容，桌面就照旧显示大字应用名。
+按应该显示的顺序返回，**最多 6 行**，多余的桌面会丢掉（6 张已经够用，也省内存和首次加载时间）。返回 0 行表示没有内容，桌面就照旧显示大字应用名。
 
 | 列名 | 类型 | 必填 | 说明 |
 |---|---|---|---|
@@ -53,6 +53,9 @@ content://<authority>/items
 | `section` | string | 否 | 分组：`recent`（最近观看）或 `favorite`（收藏）。桌面在两组之间加一个小间隔 |
 | `intent_uri` | string | 是 | 按确认键时启动的 Intent，用 `intent.toUri(Intent.URI_INTENT_SCHEME)` 生成，桌面用 `Intent.parseUri` 还原后 `startActivity` |
 | `preview_image_uri` | string | 否 | 频道画面截图（16:9），同样必须是本 provider 的 `content://<authority>/image/...`。平时卡片显示 `image_uri`（台标），**选中时淡入截图**，台标缩到左上角。只给仍然有效的截图（见第 3.1 节），没有就留空 |
+| `backdrop_uri` | string | 否 | 选中卡片时铺满整个屏幕的背景图（16:9，建议 1920 像素宽，单张不超过 1 MB），同样必须是本 provider 的 `content://<authority>/image/...`。用刮削的剧照或海报大图，**不要用低分辨率的画面截图放大**。没有时桌面用 `preview_image_uri`，两者都没有就只显示光晕 |
+| `logo_uri` | string | 否 | 片名 Logo（透明背景的 PNG/WebP），选中时显示在卡片行上方、背景图之上；没有时显示 `title` |
+| `overview` | string | 否 | 剧情介绍，选中时显示在 Logo 右边，最多两行 |
 | `preview_uri` | string | 否 | **第二阶段**用：可直接播放的预览流地址（HLS）。现在先留空 |
 
 桌面会把 `intent_uri` 里解析出来的 Intent 的包名强制设成这个 provider 所在的应用，所以只能打开应用自己的界面。
@@ -128,12 +131,13 @@ context.contentResolver.notifyChange(Uri.parse("content://$authority/items"), nu
 - 上键从程序坞进入卡片行，左右选择，确认打开，下键或返回键回到程序坞，卡片行再按上键到顶栏最近的按钮；按住左右键在两端停住。
 - 外观接近 tvOS：选中的卡片浮起放大，开着视差效果时会倾斜、回弹、缓慢摆动；标题和节目信息只显示在选中的卡片下面；
   焦点在卡片行时，背景出现一团和卡片图片主色一致的柔和光晕，切换卡片时跟着变色，离开卡片行就淡出。
-- 选中的卡片有横版图片（`image_aspect` 为 `wide`）或截图（`preview_image_uri`）时，这张图铺满整个屏幕当背景，
-  上面压一层渐变暗色，切换卡片时交叉淡入淡出，离开卡片行就淡出；这时不显示光晕。全屏用的图按屏幕尺寸重新解码，
-  所以图片最好给到 1280 像素宽左右。
+- 选中的卡片有 `backdrop_uri`（没有时用 `preview_image_uri`）时，这张图铺满整个屏幕当背景，上面压一层渐变暗色，
+  切换卡片时交叉淡入淡出，离开卡片行就淡出；这时不显示光晕。卡片行上方的应用名换成 `logo_uri`（没有时用标题）和
+  `overview` 的前两行。
 - 只显示 provider 自己的 `content://<authority>/image/` 图片，单张最多读 1 MB，缩到 512 像素以内。
 - 打开卡片时，Intent 的包名强制设为 provider 所在的应用，去掉 selector、ClipData 和所有 URI 授权标志。
 - **飞牛影视**：飞牛影视的电视应用自己不提供 provider，由桌面代劳。在「设置 → 应用联动 → 飞牛影视」登录 NAS 后，
-  桌面内部的 `FeiniuShelfProvider`（不导出）从飞牛影视服务端读取「继续观看」和「最近添加」，按本接口的列返回卡片，
+  桌面内部的 `FeiniuShelfProvider`（不导出）从飞牛影视服务端读取「继续观看」（最多 4 张）和「最近添加」（补满 6 张），
+  背景图、Logo 和剧情介绍取自电影或剧集（剧集的单集往上找到整部剧）刮削的资料，按本接口的列返回卡片，
   图片也经它缓存后提供；`ShelfSource` 把它当作名字里带「飞牛」的那个应用的 provider，所以卡片打开的是飞牛影视。
   接口和签名（Authx）来自基于飞牛影视的开源客户端，不是官方公开接口，签名密钥可以在设置里替换。

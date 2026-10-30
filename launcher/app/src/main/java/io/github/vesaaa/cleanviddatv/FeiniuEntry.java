@@ -12,7 +12,8 @@ import java.util.Set;
  */
 final class FeiniuEntry {
 
-    static final int MAX_PLAYING = 8;
+    /** Being watched first, at most this many, so the newest additions still get a place. */
+    static final int MAX_PLAYING = 4;
     static final String SECTION_PLAYING = ShelfItem.SECTION_RECENT, SECTION_ADDED = ShelfItem.SECTION_FAVORITE;
     /** Less than this left and it counts as watched: it is not offered to go on with. */
     static final long DONE_SECONDS = 60;
