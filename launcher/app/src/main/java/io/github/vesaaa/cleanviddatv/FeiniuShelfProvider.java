@@ -22,6 +22,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The top shelf (docs/top-shelf.md) of the 飞牛影视 TV app, written by the launcher itself since that app publishes
@@ -34,7 +38,8 @@ public final class FeiniuShelfProvider extends ContentProvider {
             "badge", "section", "intent_uri"};
     /** The server's lists are read again after this long; TopShelf adds its own 30 s cache on top. */
     private static final long FRESH_MS = 60_000L;
-    private static final int IMAGE_WIDTH = 640, IMAGE_FILES = 80;
+    /** Wide enough to fill the screen behind the row (TopShelf's backdrop); the cards decode it smaller. */
+    private static final int IMAGE_WIDTH = 1280, IMAGE_FILES = 80, FETCH_THREADS = 6;
 
     private final Object lock = new Object();
     private List<Object[]> rows;
@@ -125,16 +130,43 @@ public final class FeiniuShelfProvider extends ContentProvider {
         } catch (IOException e) {
             return null;
         }
-        List<Object[]> out = new ArrayList<>();
-        for (FeiniuEntry.Pick pick : FeiniuEntry.cards(playing, added)) {
-            FeiniuEntry e = pick.entry;
-            String image = e.poster.isEmpty() ? null : e.poster;
-            if (!e.widePoster()) {
-                String wide = backdrop(client, e.isEpisode() ? null : e.guid);
-                if (wide != null) image = wide;
+        // The backdrops and the pictures are fetched side by side: one after another, a first shelf of twelve cards
+        // took ten seconds and more on the TV.
+        List<FeiniuEntry.Pick> picks = FeiniuEntry.cards(playing, added);
+        String[] images = new String[picks.size()];
+        ExecutorService pool = Executors.newFixedThreadPool(FETCH_THREADS, r -> new Thread(r, "feiniu-shelf"));
+        try {
+            List<Future<?>> jobs = new ArrayList<>();
+            for (int i = 0; i < picks.size(); i++) {
+                final int index = i;
+                FeiniuEntry e = picks.get(i).entry;
+                jobs.add(pool.submit(() -> {
+                    String image = e.poster.isEmpty() ? null : e.poster;
+                    if (!e.widePoster()) {
+                        String wide = backdrop(client, e.isEpisode() ? null : e.guid);
+                        if (wide != null) image = wide;
+                    }
+                    images[index] = image;
+                    if (image != null) cached(ctx, image);
+                    return null;
+                }));
             }
+            for (Future<?> job : jobs) {
+                try {
+                    job.get(20, TimeUnit.SECONDS);
+                } catch (Exception ignored) {
+                    // that card shows without its picture, or fetches it when TopShelf opens it
+                }
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+        List<Object[]> out = new ArrayList<>();
+        for (int i = 0; i < picks.size(); i++) {
+            FeiniuEntry.Pick pick = picks.get(i);
+            FeiniuEntry e = pick.entry;
             out.add(new Object[]{e.rowId(), e.showTitle(), pick.playing ? e.playingSubtitle() : e.addedSubtitle(),
-                    image == null ? null : imageUri(ctx, image), "wide", pick.playing ? e.progress() : -1,
+                    images[i] == null ? null : imageUri(ctx, images[i]), "wide", pick.playing ? e.progress() : -1,
                     pick.playing ? null : "新增", pick.playing ? FeiniuEntry.SECTION_PLAYING : FeiniuEntry.SECTION_ADDED,
                     intentUri});
         }
@@ -183,10 +215,15 @@ public final class FeiniuShelfProvider extends ContentProvider {
         if (!serverPath.startsWith("/") || serverPath.contains("..") || serverPath.contains("?")) {
             throw new FileNotFoundException(uri.toString());
         }
+        return ParcelFileDescriptor.open(cached(ctx, serverPath), ParcelFileDescriptor.MODE_READ_ONLY);
+    }
+
+    /** The picture's file in the cache, fetched from the server first when it is not there yet. */
+    private static File cached(Context ctx, String serverPath) throws FileNotFoundException {
         File dir = new File(ctx.getCacheDir(), "feiniu");
-        File file = new File(dir, Feiniu.md5(serverPath) + ".img");
+        File file = new File(dir, Feiniu.md5(serverPath + "@" + IMAGE_WIDTH) + ".img");
         if (!file.isFile()) fetch(ctx, serverPath, dir, file);
-        return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+        return file;
     }
 
     private static void fetch(Context ctx, String serverPath, File dir, File file) throws FileNotFoundException {
@@ -205,7 +242,7 @@ public final class FeiniuShelfProvider extends ContentProvider {
         }
         if (!dir.isDirectory() && !dir.mkdirs()) throw new FileNotFoundException("no cache");
         trim(dir);
-        File part = new File(dir, file.getName() + ".part");
+        File part = new File(dir, file.getName() + "." + Thread.currentThread().getId() + ".part");
         try (FileOutputStream out = new FileOutputStream(part)) {
             out.write(bytes);
         } catch (IOException e) {

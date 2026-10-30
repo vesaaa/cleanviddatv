@@ -79,6 +79,20 @@ final class TopShelf {
     private final GradientDrawable glowShape = new GradientDrawable();
     private int glowColor;
     private final Runnable glowCheck = this::hideGlowUnlessFocused;
+    /**
+     * The focused card's picture across the whole screen, the way the tvOS top shelf fills the backdrop with what is
+     * focused: two layers that cross-fade, under a shade that keeps the clock, the row and the dock readable. Only for
+     * a card with a wide picture or a still; others keep the glow.
+     */
+    private final FrameLayout backdrop;
+    private final ImageView[] backdropLayers = new ImageView[2];
+    private final View backdropShade;
+    private int backdropFront;
+    private String backdropUri;
+    private Bitmap[] backdropBitmaps = new Bitmap[2];
+    private final ExecutorService backdropWorker = Executors.newSingleThreadExecutor(r -> new Thread(r, "shelf-backdrop"));
+    /** Backdrops are decoded at screen size, larger than the cards' pictures. */
+    private static final int BACKDROP_MAX_PX = 1920;
 
     private Map<String, ProviderInfo> providers;
     private final Map<String, List<ShelfItem>> cache = new HashMap<>();
@@ -98,6 +112,26 @@ final class TopShelf {
         this.host = host;
         this.parallax = parallax;
         density = activity.getResources().getDisplayMetrics().density;
+
+        backdrop = new FrameLayout(activity);
+        backdrop.setAlpha(0f);
+        backdrop.setVisibility(View.GONE);
+        backdrop.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        for (int i = 0; i < 2; i++) {
+            ImageView layer = new ImageView(activity);
+            layer.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            layer.setAlpha(0f);
+            backdropLayers[i] = layer;
+            backdrop.addView(layer, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+        }
+        backdropShade = new View(activity);
+        backdropShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0x99000000, 0x40000000, 0x73000000, 0xE6000000}));
+        backdrop.addView(backdropShade, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        root.addView(backdrop, root.indexOfChild(hero), new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
 
         glow = new View(activity);
         glowShape.setGradientType(GradientDrawable.RADIAL_GRADIENT);
@@ -196,6 +230,7 @@ final class TopShelf {
         panel.setVisibility(View.GONE);
         hero.setVisibility(View.VISIBLE);
         hideGlow();
+        hideBackdrop();
     }
 
     /** Up from the dock tile of this app: focus its row when it shows cards. */
@@ -212,6 +247,10 @@ final class TopShelf {
     void release() {
         hide();
         worker.shutdownNow();
+        backdropWorker.shutdownNow();
+        for (ImageView layer : backdropLayers) layer.setImageDrawable(null);
+        for (Bitmap b : backdropBitmaps) if (b != null) b.recycle();
+        backdropBitmaps = new Bitmap[2];
         for (Bitmap b : images.values()) if (b != null) b.recycle();
         images.clear();
     }
@@ -353,6 +392,7 @@ final class TopShelf {
             panel.setVisibility(View.GONE);
             hero.setVisibility(View.VISIBLE);
             hideGlow();
+            hideBackdrop();
         }
         if (hadFocus) host.returnToDock();
     }
@@ -575,7 +615,16 @@ final class TopShelf {
         }
         if (focused) {
             Object color = cell.getTag(R.id.shelfFace);
-            showGlow(color instanceof Integer ? (Integer) color : 0xFF3D5AFE, cell);
+            ShelfItem item = index < shownItems().size() ? shownItems().get(index) : null;
+            String picture = item == null ? null : item.previewImageUri != null ? item.previewImageUri
+                    : item.wide ? item.imageUri : null;
+            if (picture != null && images.get(picture) != null) {
+                showBackdrop(picture);
+                hideGlow();
+            } else {
+                hideBackdrop();
+                showGlow(color instanceof Integer ? (Integer) color : 0xFF3D5AFE, cell);
+            }
         } else {
             // Focus moving to the next card keeps the glow; leaving the row fades it.
             handler.removeCallbacks(glowCheck);
@@ -618,7 +667,81 @@ final class TopShelf {
     }
 
     private void hideGlowUnlessFocused() {
-        if (!panel.hasFocus()) hideGlow();
+        if (!panel.hasFocus()) {
+            hideGlow();
+            hideBackdrop();
+        }
+    }
+
+    /** The card's picture across the screen: the small one at once, then the same picture at screen size. */
+    private void showBackdrop(String uri) {
+        handler.removeCallbacks(glowCheck);
+        if (uri.equals(backdropUri) && backdrop.getVisibility() == View.VISIBLE) {
+            backdrop.animate().cancel();
+            backdrop.animate().alpha(1f).setDuration(200).start();
+            return;
+        }
+        backdropUri = uri;
+        setBackdropLayer(images.get(uri), false);
+        if (backdrop.getVisibility() != View.VISIBLE) {
+            backdrop.setVisibility(View.VISIBLE);
+            backdrop.animate().cancel();
+            backdrop.animate().alpha(1f).setDuration(420).start();
+        }
+        ContentResolver cr = activity.getContentResolver();
+        backdropWorker.execute(() -> {
+            Bitmap big = ShelfSource.image(cr, uri, BACKDROP_MAX_PX);
+            handler.post(() -> {
+                if (big == null || activity.isDestroyed() || !uri.equals(backdropUri)) {
+                    if (big != null) big.recycle();
+                    return;
+                }
+                setBackdropLayer(big, true);
+            });
+        });
+    }
+
+    /**
+     * Cross-fades to a picture. A sharp copy of the one already shown replaces it without a fade, and is the only kind
+     * the backdrop owns (the small ones belong to the cards' cache).
+     */
+    private void setBackdropLayer(Bitmap bitmap, boolean owned) {
+        if (bitmap == null) return;
+        int next = 1 - backdropFront;
+        ImageView in = backdropLayers[next], out = backdropLayers[backdropFront];
+        Bitmap old = backdropBitmaps[next];
+        in.setImageBitmap(bitmap);
+        backdropBitmaps[next] = owned ? bitmap : null;
+        if (old != null && old != bitmap) old.recycle();
+        in.animate().cancel();
+        out.animate().cancel();
+        in.bringToFront();
+        backdropShade.bringToFront();   // the shade stays on top
+        if (owned) {
+            in.setAlpha(1f);
+            out.setAlpha(0f);
+        } else {
+            in.setAlpha(0f);
+            in.animate().alpha(1f).setDuration(360).start();
+            out.animate().alpha(0f).setStartDelay(360).setDuration(1).start();
+        }
+        backdropFront = next;
+    }
+
+    private void hideBackdrop() {
+        backdropUri = null;
+        if (backdrop.getVisibility() != View.VISIBLE) return;
+        backdrop.animate().cancel();
+        backdrop.animate().alpha(0f).setDuration(300).withEndAction(() -> {
+            if (backdropUri != null) return;
+            backdrop.setVisibility(View.GONE);
+            for (int i = 0; i < 2; i++) {
+                backdropLayers[i].setImageDrawable(null);
+                backdropLayers[i].setAlpha(0f);
+                if (backdropBitmaps[i] != null) backdropBitmaps[i].recycle();
+                backdropBitmaps[i] = null;
+            }
+        }).start();
     }
 
     private void hideGlow() {

@@ -126,6 +126,11 @@ final class ShelfSource {
 
     /** One card image, decoded small. Blocking; null on any failure or an image over 1 MB. */
     static Bitmap image(ContentResolver cr, String uri) {
+        return image(cr, uri, IMAGE_MAX_PX);
+    }
+
+    /** One image, decoded to about maxPx on its longer side. Blocking; null on any failure or an image over 1 MB. */
+    static Bitmap image(ContentResolver cr, String uri, int maxPx) {
         if (uri == null) return null;
         try {
             Uri u = Uri.parse(uri);
@@ -137,7 +142,7 @@ final class ShelfSource {
             }
             if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null;
             int sample = 1;
-            while (Math.max(bounds.outWidth, bounds.outHeight) / (sample * 2) >= IMAGE_MAX_PX) sample *= 2;
+            while (Math.max(bounds.outWidth, bounds.outHeight) / (sample * 2) >= maxPx) sample *= 2;
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = sample;
             try (InputStream in = cr.openInputStream(u)) {
