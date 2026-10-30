@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
@@ -160,7 +161,7 @@ final class TopShelf {
      */
     boolean show(String packageName, float dockTopInRoot) {
         bottomY = dockTopInRoot - dp(18);
-        if (providers == null) providers = ShelfSource.providers(activity.getPackageManager());
+        if (providers == null) providers = ShelfSource.providers(activity);
         ProviderInfo provider = packageName == null ? null : providers.get(packageName);
         if (provider == null) {
             hide();
@@ -175,7 +176,7 @@ final class TopShelf {
         hide();
         pkg = packageName;
         focusIndex = 0;
-        heading.setText(headingFor(provider));
+        heading.setText(headingFor(packageName, provider));
         List<ShelfItem> cached = cache.get(packageName);
         if (cached != null && !cached.isEmpty()) bind(cached);
         Long at = cachedAt.get(packageName);
@@ -661,8 +662,15 @@ final class TopShelf {
         }
     }
 
-    private String headingFor(ProviderInfo provider) {
-        CharSequence app = provider.applicationInfo.loadLabel(activity.getPackageManager());
+    /** The dock app's name (not the provider's: the launcher's own provider speaks for 飞牛影视) and the shelf's title. */
+    private String headingFor(String packageName, ProviderInfo provider) {
+        PackageManager pm = activity.getPackageManager();
+        CharSequence app;
+        try {
+            app = pm.getApplicationLabel(pm.getApplicationInfo(packageName, 0));
+        } catch (PackageManager.NameNotFoundException e) {
+            app = provider.applicationInfo.loadLabel(pm);
+        }
         String title = ShelfSource.title(activity.getPackageManager(), provider);
         return title == null || title.trim().isEmpty() ? app.toString() : app + " · " + title.trim();
     }

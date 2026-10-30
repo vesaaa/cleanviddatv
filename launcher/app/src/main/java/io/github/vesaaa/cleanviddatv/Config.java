@@ -42,8 +42,8 @@ final class Config {
     static final String SETTINGS_NAME = "launcher_settings";
     static final String ROWS_BELOW_DOCK_KEY = "rows_below_dock";
     static final String WALLPAPER_CHOICE_KEY = "wallpaper_choice";
-    /** Launcher settings choices (视差效果, 24 小时制, 屏保); a theme push or reset clears them with the others. */
-    static final String PARALLAX_KEY = "parallax_tiles", CLOCK_24H_KEY = "clock_24h";
+    /** Launcher settings choices (视差效果, 24 小时制, 屏保, 顶部展示区); a theme push or reset clears them with the others. */
+    static final String PARALLAX_KEY = "parallax_tiles", CLOCK_24H_KEY = "clock_24h", TOP_SHELF_KEY = "top_shelf";
     static final String SCREENSAVER_MINUTES_KEY = "screensaver_minutes", SCREENSAVER_STYLE_KEY = "screensaver_style";
     static final String SCREENSAVER_PHOTOS = "photos", SCREENSAVER_CLOCK = "clock";
     static final String DOCK_OPACITY_KEY = "dock_opacity";
@@ -652,6 +652,7 @@ final class Config {
         advancedEffects = choices.getBoolean("advanced_effects", advancedEffects);
         parallaxTiles = choices.getBoolean(PARALLAX_KEY, parallaxTiles);
         clock24h = choices.getBoolean(CLOCK_24H_KEY, clock24h);
+        topShelf = choices.getBoolean(TOP_SHELF_KEY, topShelf);
         idleClockMinutes = choices.getInt(SCREENSAVER_MINUTES_KEY, idleClockMinutes);
         screensaverStyle = choices.getString(SCREENSAVER_STYLE_KEY, screensaverStyle);
         if (!SCREENSAVER_CLOCK.equals(screensaverStyle)) screensaverStyle = SCREENSAVER_PHOTOS;

@@ -1,219 +1,244 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Launcher settings: categories on the left, the focused category's rows on the right (LauncherSettingsActivity). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FF101419"
-    android:fillViewport="true">
+    android:background="#FF0E1217"
+    android:orientation="horizontal">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:id="@+id/settingsNav"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:background="#FF141A21"
         android:orientation="vertical"
-        android:paddingStart="72dp"
-        android:paddingEnd="72dp"
-        android:paddingTop="38dp"
-        android:paddingBottom="38dp">
+        android:paddingStart="36dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="44dp"
+        android:paddingBottom="32dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingStart="20dp"
             android:text="@string/launcher_settings"
             android:textColor="#FFFFFFFF"
-            android:textSize="34sp" />
+            android:textSize="22sp"
+            android:fontFamily="@string/font_medium"
+            android:singleLine="true"
+            android:ellipsize="end" />
 
         <TextView
-            android:id="@+id/reorderChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="28dp"
-            android:text="@string/reorder"
-            android:visibility="gone" />
-
-        <TextView
+            android:id="@+id/settingsVersion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:text="@string/columns_label"
-            android:textColor="#FFFFFFFF"
-            android:textSize="20sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
-
-            <TextView android:id="@+id/columns4" style="@style/SettingsColumnChoice" android:text="4" />
-            <TextView android:id="@+id/columns5" style="@style/SettingsColumnChoice" android:text="5" />
-            <TextView android:id="@+id/columns6" style="@style/SettingsColumnChoice" android:text="6" />
-            <TextView android:id="@+id/columns7" style="@style/SettingsColumnChoice" android:text="7" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/rows_below_dock_label"
-            android:textColor="#FFFFFFFF"
-            android:textSize="20sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
-
-            <TextView android:id="@+id/rows0" style="@style/SettingsColumnChoice" android:text="0" />
-            <TextView android:id="@+id/rows1" style="@style/SettingsColumnChoice" android:text="1" />
-            <TextView android:id="@+id/rows2" style="@style/SettingsColumnChoice" android:text="2" />
-            <TextView android:id="@+id/rows3" style="@style/SettingsColumnChoice" android:text="3" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/dock_opacity_label"
-            android:textColor="#FFFFFFFF"
-            android:textSize="20sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
-
-            <TextView android:id="@+id/dock100" style="@style/SettingsColumnChoice" android:text="100%" />
-            <TextView android:id="@+id/dock70" style="@style/SettingsColumnChoice" android:text="70%" />
-            <TextView android:id="@+id/dock50" style="@style/SettingsColumnChoice" android:text="50%" />
-            <TextView android:id="@+id/dock30" style="@style/SettingsColumnChoice" android:text="30%" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/wallpaperChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="28dp" />
-
-        <TextView
-            android:id="@+id/animationsChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="28dp" />
-
-        <TextView
-            android:id="@+id/advancedChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="10dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/advanced_effects_warning"
-            android:textColor="#FFACB8C1"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="22dp"
+            android:paddingStart="20dp"
+            android:textColor="#FF7D8A97"
             android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/parallaxChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="18dp" />
-
-        <TextView
-            android:id="@+id/clock24hChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="28dp" />
-
-        <TextView
-            android:id="@+id/screensaverChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="10dp" />
-
-        <TextView
-            android:id="@+id/screensaverStyleChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="10dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/screensaver_hint"
-            android:textColor="#FFACB8C1"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/openOnStartChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="28dp"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/followThemeChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="18dp"
-            android:text="@string/follow_theme" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"
-            android:text="@string/follow_theme_hint"
-            android:textColor="#FFACB8C1"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/defaultHomeChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="28dp"
-            android:text="@string/home_settings" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"
-            android:text="@string/home_settings_help"
-            android:textColor="#FFACB8C1"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/tvSettingsChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="18dp"
-            android:text="@string/tv_settings" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:text="@string/update_label"
-            android:textColor="#FFFFFFFF"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/updateChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="10dp" />
-
-        <TextView
-            android:id="@+id/updateBetaChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="18dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:text="@string/vidda_tools_label"
-            android:textColor="#FFFFFFFF"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/adbChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="10dp" />
-
-        <TextView
-            android:id="@+id/restoreChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="18dp"
-            android:text="@string/restore_stock" />
+        <TextView android:id="@+id/navLayout" style="@style/SettingsNav" android:text="@string/settings_nav_layout" />
+        <TextView android:id="@+id/navLook" style="@style/SettingsNav" android:text="@string/settings_nav_look" />
+        <TextView android:id="@+id/navClock" style="@style/SettingsNav" android:text="@string/settings_nav_clock" />
+        <TextView android:id="@+id/navApps" style="@style/SettingsNav" android:text="@string/settings_nav_apps" />
+        <TextView android:id="@+id/navHome" style="@style/SettingsNav" android:text="@string/settings_nav_home" />
+        <TextView android:id="@+id/navUpdate" style="@style/SettingsNav" android:text="@string/settings_nav_update" />
+        <TextView android:id="@+id/navTools" style="@style/SettingsNav" android:text="@string/settings_nav_tools" />
     </LinearLayout>
-</ScrollView>
+
+    <ScrollView
+        android:id="@+id/settingsScroll"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="56dp"
+            android:paddingEnd="72dp"
+            android:paddingTop="40dp"
+            android:paddingBottom="48dp">
+
+            <LinearLayout android:id="@+id/pageLayout" style="@style/SettingsPage">
+
+                <TextView style="@style/SettingsPageTitle" android:text="@string/settings_nav_layout" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/reorderChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/reorder"
+                    android:visibility="gone" />
+
+                <LinearLayout style="@style/SettingsGroup">
+                    <TextView style="@style/SettingsCaption" android:text="@string/columns_label" />
+                    <TextView android:id="@+id/columns4" style="@style/SettingsColumnChoice" android:text="4" />
+                    <TextView android:id="@+id/columns5" style="@style/SettingsColumnChoice" android:text="5" />
+                    <TextView android:id="@+id/columns6" style="@style/SettingsColumnChoice" android:text="6" />
+                    <TextView android:id="@+id/columns7" style="@style/SettingsColumnChoice" android:text="7" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/SettingsGroup">
+                    <TextView style="@style/SettingsCaption" android:text="@string/rows_below_dock_label" />
+                    <TextView android:id="@+id/rows0" style="@style/SettingsColumnChoice" android:text="0" />
+                    <TextView android:id="@+id/rows1" style="@style/SettingsColumnChoice" android:text="1" />
+                    <TextView android:id="@+id/rows2" style="@style/SettingsColumnChoice" android:text="2" />
+                    <TextView android:id="@+id/rows3" style="@style/SettingsColumnChoice" android:text="3" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/SettingsGroup">
+                    <TextView style="@style/SettingsCaption" android:text="@string/dock_opacity_label" />
+                    <TextView android:id="@+id/dock100" style="@style/SettingsColumnChoice" android:text="100%" />
+                    <TextView android:id="@+id/dock70" style="@style/SettingsColumnChoice" android:text="70%" />
+                    <TextView android:id="@+id/dock50" style="@style/SettingsColumnChoice" android:text="50%" />
+                    <TextView android:id="@+id/dock30" style="@style/SettingsColumnChoice" android:text="30%" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/pageLook" style="@style/SettingsPage">
+
+                <TextView style="@style/SettingsPageTitle" android:text="@string/settings_nav_look" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/wallpaperChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/wallpaper_label" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/animationsChoice"
+                    style="@style/SettingsRow"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/animations_label" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/advancedChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/advanced_effects" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/parallaxChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/parallax_label" />
+
+                <TextView style="@style/SettingsHint" android:text="@string/advanced_effects_warning" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/pageClock" style="@style/SettingsPage">
+
+                <TextView style="@style/SettingsPageTitle" android:text="@string/settings_nav_clock" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/clock24hChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/clock_24h_label" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/screensaverChoice"
+                    style="@style/SettingsRow"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/screensaver_label" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/screensaverStyleChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/screensaver_style_label" />
+
+                <TextView style="@style/SettingsHint" android:text="@string/screensaver_hint" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/pageApps" style="@style/SettingsPage">
+
+                <TextView style="@style/SettingsPageTitle" android:text="@string/settings_nav_apps" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/topShelfChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/top_shelf_label" />
+
+                <TextView style="@style/SettingsHint" android:text="@string/top_shelf_hint" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/vstvChoice"
+                    style="@style/SettingsRow"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/vstv_label" />
+
+                <TextView style="@style/SettingsHint" android:text="@string/vstv_hint" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/feiniuChoice"
+                    style="@style/SettingsRow"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/feiniu_label" />
+
+                <TextView style="@style/SettingsHint" android:text="@string/feiniu_hint" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/pageHome" style="@style/SettingsPage">
+
+                <TextView style="@style/SettingsPageTitle" android:text="@string/settings_nav_home" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/openOnStartChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/open_on_start_label"
+                    android:visibility="gone" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/followThemeChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/follow_theme" />
+
+                <TextView style="@style/SettingsHint" android:text="@string/follow_theme_hint" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/defaultHomeChoice"
+                    style="@style/SettingsRow"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/home_settings" />
+
+                <TextView style="@style/SettingsHint" android:text="@string/home_settings_help" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/tvSettingsChoice"
+                    style="@style/SettingsRow"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/tv_settings" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/pageUpdate" style="@style/SettingsPage">
+
+                <TextView style="@style/SettingsPageTitle" android:text="@string/settings_nav_update" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/updateChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/update_check_label" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/updateBetaChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/update_beta_label" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/pageTools" style="@style/SettingsPage">
+
+                <TextView style="@style/SettingsPageTitle" android:text="@string/settings_nav_tools" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/adbChoice"
+                    style="@style/SettingsRow"
+                    android:text="@string/adb_label" />
+
+                <io.github.vesaaa.cleanviddatv.SettingsItem
+                    android:id="@+id/restoreChoice"
+                    style="@style/SettingsRow"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/restore_stock" />
+            </LinearLayout>
+        </FrameLayout>
+    </ScrollView>
+</LinearLayout>

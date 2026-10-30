@@ -9,7 +9,8 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- The restore connects to the TV's own adbd on 127.0.0.1 (LocalAdb), and the online update (Updater) to
-         download.aikit.stream and, when that fails, GitHub. The launcher opens no other connection. -->
+         download.aikit.stream and, when that fails, GitHub. 飞牛影视 settings and its top shelf talk to a NAS on the
+         home network (FeiniuScan tries port 5666 on the TV's own /24). The launcher opens no other connection. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- Needed since Android 10 to read the Wi-Fi network name for the network pill. Never requested at
@@ -92,6 +93,7 @@
         android:banner="@drawable/banner"
         android:theme="@style/Theme.TvHome"
         android:allowBackup="false"
+        android:networkSecurityConfig="@xml/network_security"
         android:localeConfig="@xml/locales_config">
 
         <activity
@@ -143,6 +145,12 @@
             android:exported="false"
             android:excludeFromRecents="true"
             android:screenOrientation="landscape" />
+        <activity
+            android:name=".FeiniuSettingsActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustPan" />
         <!-- The system input switcher (com.android.tv.action.VIEW_INPUTS), which is what the remote's Input
              button becomes through the TV's Live TV app or InputKeyService. Disabled here and switched on by
              MainActivity only while handle_view_inputs is true (config.xml or a theme), for sets whose stock
@@ -275,6 +283,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/update_paths" />
         </provider>
+        <!-- The 飞牛影视 app's top shelf, read from the NAS by the launcher itself (docs/top-shelf.md). Only TopShelf reads it. -->
+        <provider
+            android:name=".FeiniuShelfProvider"
+            android:authorities="${applicationId}.feiniu"
+            android:exported="false" />
         <!-- The documents FilePickerActivity hands out. Only the system holds MANAGE_DOCUMENTS: apps reach these
              documents through the URI grants the picker gives them, never by querying the provider themselves. -->
         <provider

@@ -2,6 +2,7 @@ package io.github.vesaaa.cleanviddatv;
 
 import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
@@ -33,8 +34,12 @@ final class ShelfSource {
 
     private ShelfSource() { }
 
-    /** Package to its shelf provider, for every enabled, exported provider that declares the action. */
-    static Map<String, ProviderInfo> providers(PackageManager pm) {
+    /**
+     * Package to its shelf provider, for every enabled, exported provider that declares the action; and the 飞牛影视
+     * app, which publishes none, gets the launcher's own (FeiniuShelfProvider) once an account is signed in.
+     */
+    static Map<String, ProviderInfo> providers(Context ctx) {
+        PackageManager pm = ctx.getPackageManager();
         Map<String, ProviderInfo> out = new HashMap<>();
         List<ResolveInfo> found;
         try {
@@ -47,6 +52,12 @@ final class ShelfSource {
             if (p == null || !p.exported || !p.enabled || p.authority == null) continue;
             // One authority is enough; a provider may list several separated by ';'.
             if (!out.containsKey(p.packageName)) out.put(p.packageName, p);
+        }
+        if (Feiniu.signedIn(ctx)) {
+            String feiniu = FeiniuShelfProvider.appPackage(ctx);
+            ProviderInfo own = feiniu == null || out.containsKey(feiniu) ? null
+                    : pm.resolveContentProvider(FeiniuShelfProvider.authority(ctx), 0);
+            if (own != null) out.put(feiniu, own);
         }
         return out;
     }

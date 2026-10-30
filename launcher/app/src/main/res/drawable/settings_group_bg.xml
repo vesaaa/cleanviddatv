@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A row of numbered choices: the same card as a row, never focused itself (its choices are). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FF1B222B" />
+    <corners android:radius="12dp" />
+</shape>

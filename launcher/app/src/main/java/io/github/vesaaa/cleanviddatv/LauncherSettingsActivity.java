@@ -9,7 +9,11 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.FocusFinder;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -20,7 +24,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/** Remote-friendly settings owned by the launcher; system settings stay one row away. */
+/**
+ * Remote-friendly settings owned by the launcher; system settings stay one row away. Categories run down the left;
+ * the focused one's rows show on the right. Right goes into a page, Left from a page's first column comes back.
+ */
 public final class LauncherSettingsActivity extends Activity {
     @Override
     protected void attachBaseContext(android.content.Context base) {
@@ -33,15 +40,28 @@ public final class LauncherSettingsActivity extends Activity {
     private final TextView[] rowChoices = new TextView[4];
     private static final int[] DOCK_OPACITIES = {100, 70, 50, 30};
     private final TextView[] dockChoices = new TextView[DOCK_OPACITIES.length];
-    private TextView wallpaperChoice;
-    private TextView animationsChoice;
-    private TextView advancedChoice;
-    private TextView followThemeChoice;
-    private TextView openOnStartChoice;
-    private TextView adbChoice;
-    private TextView updateChoice, updateBetaChoice;
-    private TextView parallaxChoice, clock24hChoice, screensaverChoice, screensaverStyleChoice;
-    private boolean parallax, clock24h;
+    private SettingsItem wallpaperChoice;
+    private SettingsItem animationsChoice;
+    private SettingsItem advancedChoice;
+    private SettingsItem followThemeChoice;
+    private SettingsItem openOnStartChoice;
+    private SettingsItem adbChoice;
+    private SettingsItem updateChoice, updateBetaChoice;
+    private SettingsItem parallaxChoice, clock24hChoice, screensaverChoice, screensaverStyleChoice;
+    private SettingsItem topShelfChoice, vstvChoice, feiniuChoice;
+    private boolean parallax, clock24h, topShelf;
+    private static final String[] VSTV_PACKAGES = {"com.vesaa.mytv", "com.chinablue.tv"};
+    private static final int[] NAV_IDS = {R.id.navLayout, R.id.navLook, R.id.navClock, R.id.navApps, R.id.navHome,
+            R.id.navUpdate, R.id.navTools};
+    private static final int[] PAGE_IDS = {R.id.pageLayout, R.id.pageLook, R.id.pageClock, R.id.pageApps,
+            R.id.pageHome, R.id.pageUpdate, R.id.pageTools};
+    private static final String STATE_PAGE = "page";
+    private final View[] navs = new View[NAV_IDS.length];
+    private final ViewGroup[] pages = new ViewGroup[PAGE_IDS.length];
+    private int page;
+    /** The row last focused on each page, so Right goes back to it. */
+    private final View[] lastInPage = new View[PAGE_IDS.length];
+    private ScrollView scroll;
     private int screensaverMinutes;
     private String screensaverStyle;
     private static final int[] SCREENSAVER_MINUTES = {0, 5, 10, 15, 30, 60};
@@ -59,6 +79,22 @@ public final class LauncherSettingsActivity extends Activity {
         setContentView(R.layout.activity_launcher_settings);
         choices = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE);
         Config config = Config.load(this);
+        scroll = findViewById(R.id.settingsScroll);
+        ((TextView) findViewById(R.id.settingsVersion)).setText(getString(R.string.settings_version,
+                Updater.currentVersion(this)));
+        for (int i = 0; i < NAV_IDS.length; i++) {
+            final int index = i;
+            navs[i] = findViewById(NAV_IDS[i]);
+            pages[i] = findViewById(PAGE_IDS[i]);
+            navs[i].setOnFocusChangeListener((v, focused) -> {
+                if (focused) showPage(index);
+            });
+            navs[i].setOnClickListener(v -> enterPage());
+        }
+        // Remember the focused row of each page.
+        getWindow().getDecorView().getViewTreeObserver().addOnGlobalFocusChangeListener((oldFocus, newFocus) -> {
+            if (newFocus != null && isInside(newFocus, pages[page])) lastInPage[page] = newFocus;
+        });
         View reorderChoice = findViewById(R.id.reorderChoice);
         reorderChoice.setVisibility(config.launcherSettingsButton ? View.VISIBLE : View.GONE);
         reorderChoice.setOnClickListener(v -> {
@@ -167,6 +203,18 @@ public final class LauncherSettingsActivity extends Activity {
             choices.edit().putString(Config.SCREENSAVER_STYLE_KEY, screensaverStyle).apply();
             refresh();
         });
+        topShelf = config.topShelf;
+        topShelfChoice = findViewById(R.id.topShelfChoice);
+        topShelfChoice.setOnClickListener(v -> {
+            topShelf = !topShelf;
+            choices.edit().putBoolean(Config.TOP_SHELF_KEY, topShelf).apply();
+            changed();
+            refresh();
+        });
+        vstvChoice = findViewById(R.id.vstvChoice);
+        vstvChoice.setOnClickListener(v -> openVsTv());
+        feiniuChoice = findViewById(R.id.feiniuChoice);
+        feiniuChoice.setOnClickListener(v -> startActivity(new Intent(this, FeiniuSettingsActivity.class)));
         openOnStartChoice = findViewById(R.id.openOnStartChoice);
         if (config.openOnStartChoice) {
             openOnStartChoice.setVisibility(View.VISIBLE);
@@ -179,7 +227,7 @@ public final class LauncherSettingsActivity extends Activity {
                     .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
                     .remove(Config.DOCK_OPACITY_KEY).remove(OpenOnStart.KEY).remove(Config.PARALLAX_KEY)
                     .remove(Config.CLOCK_24H_KEY).remove(Config.SCREENSAVER_MINUTES_KEY)
-                    .remove(Config.SCREENSAVER_STYLE_KEY).commit();
+                    .remove(Config.SCREENSAVER_STYLE_KEY).remove(Config.TOP_SHELF_KEY).commit();
             Config current = Config.load(this);
             columns = current.columns;
             rowsBelowDock = current.rowsBelowDock;
@@ -188,6 +236,7 @@ public final class LauncherSettingsActivity extends Activity {
             advancedEffects = current.animations && current.advancedEffects;
             parallax = current.parallaxTiles;
             clock24h = current.clock24h;
+            topShelf = current.topShelf;
             screensaverMinutes = current.homeIdleClockMinutes;
             screensaverStyle = current.screensaverStyle;
             changed();
@@ -211,20 +260,134 @@ public final class LauncherSettingsActivity extends Activity {
             refresh();
         });
         refresh();
-        if (config.launcherSettingsButton) reorderChoice.requestFocus();
-        else columnChoices[Math.max(0, Math.min(columns - 4, 3))].requestFocus();
+        int start = state == null ? 0 : Math.max(0, Math.min(state.getInt(STATE_PAGE, 0), NAV_IDS.length - 1));
+        showPage(start);
+        navs[start].requestFocus();
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle out) {
+        super.onSaveInstanceState(out);
+        out.putInt(STATE_PAGE, page);
+    }
+
+    /** The category's rows on the right; the category stays marked while focus is in them. */
+    private void showPage(int index) {
+        page = index;
+        for (int i = 0; i < pages.length; i++) {
+            pages[i].setVisibility(i == index ? View.VISIBLE : View.GONE);
+            navs[i].setSelected(i == index);
+        }
+        scroll.scrollTo(0, 0);
+    }
+
+    /** Right (or OK) on a category: into its page, at the row last used there. */
+    private void enterPage() {
+        View target = lastInPage[page];
+        if (target == null || !target.isShown() || !target.isFocusable() || !target.isEnabled()) {
+            target = FocusFinder.getInstance().findNextFocus(pages[page], null, View.FOCUS_DOWN);
+        }
+        if (target != null) target.requestFocus();
+    }
+
+    private static boolean isInside(View v, ViewGroup group) {
+        for (Object p = v.getParent(); p instanceof View; p = ((View) p).getParent()) if (p == group) return true;
+        return false;
+    }
+
+    /**
+     * Right from a category enters its page; Left from a page where nothing lies further left goes back to the
+     * category; Up and Down stay inside the page (the categories are not below or above its rows).
+     */
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        View focus = getCurrentFocus();
+        if (event.getAction() != KeyEvent.ACTION_DOWN || focus == null) return super.dispatchKeyEvent(event);
+        boolean rtl = getResources().getBoolean(R.bool.rtl_menu_bar);
+        int code = event.getKeyCode();
+        int into = rtl ? KeyEvent.KEYCODE_DPAD_LEFT : KeyEvent.KEYCODE_DPAD_RIGHT;
+        int back = rtl ? KeyEvent.KEYCODE_DPAD_RIGHT : KeyEvent.KEYCODE_DPAD_LEFT;
+        int navIndex = -1;
+        for (int i = 0; i < navs.length; i++) if (navs[i] == focus) navIndex = i;
+        if (navIndex >= 0) {
+            if (code == into) {
+                enterPage();
+                return true;
+            }
+            if (code == back) return true;
+            return super.dispatchKeyEvent(event);
+        }
+        if (!isInside(focus, pages[page])) return super.dispatchKeyEvent(event);
+        int dir = code == back ? (rtl ? View.FOCUS_RIGHT : View.FOCUS_LEFT)
+                : code == into ? (rtl ? View.FOCUS_LEFT : View.FOCUS_RIGHT)
+                : code == KeyEvent.KEYCODE_DPAD_UP ? View.FOCUS_UP
+                : code == KeyEvent.KEYCODE_DPAD_DOWN ? View.FOCUS_DOWN : 0;
+        if (dir == 0) return super.dispatchKeyEvent(event);
+        View next = FocusFinder.getInstance().findNextFocus(pages[page], focus, dir);
+        if (next != null) {
+            next.requestFocus(dir);
+            return true;
+        }
+        if (code == back) navs[page].requestFocus();
+        return true;     // the page's edge: stay
+    }
+
+    @Override
+    public void onBackPressed() {
+        View focus = getCurrentFocus();
+        if (focus != null && isInside(focus, pages[page])) {
+            navs[page].requestFocus();
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    /** VsTV opens when it is installed; otherwise the row says so. */
+    private void openVsTv() {
+        for (String pkg : VSTV_PACKAGES) {
+            Intent launch = getPackageManager().getLeanbackLaunchIntentForPackage(pkg);
+            if (launch == null) launch = getPackageManager().getLaunchIntentForPackage(pkg);
+            if (launch != null) {
+                open(launch);
+                return;
+            }
+        }
+        Toast.makeText(this, R.string.app_not_installed, Toast.LENGTH_SHORT).show();
+    }
+
+    /** Connected (it publishes a shelf), installed but too old, or not installed. */
+    private String vstvState() {
+        Map<String, android.content.pm.ProviderInfo> shelves = ShelfSource.providers(this);
+        boolean installed = false;
+        for (String pkg : VSTV_PACKAGES) {
+            if (shelves.containsKey(pkg)) return getString(R.string.vstv_connected);
+            try {
+                getPackageManager().getPackageInfo(pkg, 0);
+                installed = true;
+            } catch (PackageManager.NameNotFoundException ignored) {
+                // not this flavour
+            }
+        }
+        return getString(installed ? R.string.vstv_update : R.string.app_not_installed);
+    }
+
+    private String feiniuState() {
+        if (!Feiniu.signedIn(this)) return getString(R.string.feiniu_signed_out);
+        String who = Feiniu.user(this) + " @ " + Feiniu.display(Feiniu.base(this));
+        return FeiniuShelfProvider.appPackage(this) == null ? getString(R.string.feiniu_no_app) : who;
+    }
+
+    /** The choices in reverse, after their caption, which stays first. */
     private void reverseRow(TextView[] views) {
         LinearLayout row = (LinearLayout) views[0].getParent();
-        row.removeAllViews();
+        for (TextView v : views) row.removeView(v);
         for (int i = views.length - 1; i >= 0; i--) row.addView(views[i]);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Back from the wallpaper gallery: show its choice on the row.
+        // Back from the wallpaper gallery or 飞牛影视 settings: show what changed on the rows.
         if (wallpaperChoice != null) refresh();
     }
 
@@ -251,7 +414,7 @@ public final class LauncherSettingsActivity extends Activity {
     private void checkForUpdate() {
         if (updateBusy) return;
         updateBusy = true;
-        updateChoice.setText(R.string.update_checking);
+        updateChoice.setValue(getString(R.string.update_checking), false);
         new Thread(() -> {
             Updates.Release release;
             String error = null;
@@ -337,7 +500,7 @@ public final class LauncherSettingsActivity extends Activity {
             if (SCREENSAVER_MINUTES[i] == screensaverMinutes) checked = i;
         }
         new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.screensaver_state, "").replace("：", ""))
+                .setTitle(R.string.screensaver_label)
                 .setSingleChoiceItems(labels, checked, (dialog, which) -> {
                     dialog.dismiss();
                     screensaverMinutes = SCREENSAVER_MINUTES[which];
@@ -428,39 +591,57 @@ public final class LauncherSettingsActivity extends Activity {
         for (int i = 0; i < dockChoices.length; i++) {
             dockChoices[i].setSelected(dockOpacity == DOCK_OPACITIES[i]);
         }
-        animationsChoice.setText(getString(R.string.animations_state,
-                getString(animations ? R.string.on : R.string.off)));
-        advancedChoice.setText(getString(R.string.advanced_effects_state,
-                getString(advancedEffects ? R.string.on : R.string.off)));
-        advancedChoice.setEnabled(animations);
-        advancedChoice.setAlpha(animations ? 1f : 0.5f);
+        animationsChoice.setToggle(animations);
+        advancedChoice.setToggle(advancedEffects);
+        enable(advancedChoice, animations);
         // Parallax needs the advanced effects, like the rest of the tvOS motion.
-        parallaxChoice.setText(getString(R.string.parallax_state,
-                getString(parallax && advancedEffects ? R.string.on : R.string.off)));
-        parallaxChoice.setEnabled(advancedEffects);
-        parallaxChoice.setAlpha(advancedEffects ? 1f : 0.5f);
-        clock24hChoice.setText(getString(R.string.clock_24h_state,
-                getString(clock24h ? R.string.on : R.string.off)));
-        screensaverChoice.setText(getString(R.string.screensaver_state, screensaverLabel(screensaverMinutes)));
-        screensaverStyleChoice.setText(getString(R.string.screensaver_style_state, getString(
-                Config.SCREENSAVER_CLOCK.equals(screensaverStyle) ? R.string.screensaver_clock : R.string.screensaver_photos)));
-        screensaverStyleChoice.setEnabled(screensaverMinutes > 0);
-        screensaverStyleChoice.setAlpha(screensaverMinutes > 0 ? 1f : 0.5f);
+        parallaxChoice.setToggle(parallax && advancedEffects);
+        enable(parallaxChoice, advancedEffects);
+        clock24hChoice.setToggle(clock24h);
+        screensaverChoice.setValue(screensaverLabel(screensaverMinutes), true);
+        screensaverStyleChoice.setValue(getString(Config.SCREENSAVER_CLOCK.equals(screensaverStyle)
+                ? R.string.screensaver_clock : R.string.screensaver_photos), false);
+        enable(screensaverStyleChoice, screensaverMinutes > 0);
         String wallpaperCurrent = choices.getString(Config.WALLPAPER_CHOICE_KEY, null);
-        wallpaperChoice.setText(getString(R.string.wallpaper_state, wallpaperLabel(wallpaperCurrent)));
-        openOnStartChoice.setText(getString(R.string.open_on_start_state, openOnStartLabel()));
-        followThemeChoice.setSelected(!hasOnTvChoices());
+        wallpaperChoice.setValue(wallpaperLabel(wallpaperCurrent), true);
+        topShelfChoice.setToggle(topShelf);
+        vstvChoice.setValue(vstvState(), false);
+        feiniuChoice.setValue(feiniuState(), true);
+        openOnStartChoice.setValue(openOnStartLabel(), true);
+        followThemeChoice.setValue(getString(hasOnTvChoices() ? R.string.follow_theme_value_reset
+                : R.string.follow_theme_value_following), false);
+        defaultHome().setArrow();
+        tvSettings().setArrow();
+        ((SettingsItem) findViewById(R.id.restoreChoice)).setArrow();
         String address = ViddaTools.address(this);
         String version = Updater.currentVersion(this);
         String available = Updater.prefs(this).getString(Updater.KEY_AVAILABLE, "");
-        updateChoice.setText(!available.isEmpty() && Updates.compare(available, version) > 0
-                ? getString(R.string.update_state_available, available, version)
-                : getString(R.string.update_state, version));
-        updateBetaChoice.setText(getString(R.string.update_beta_state,
-                getString(Updater.beta(this) ? R.string.on : R.string.off)));
-        adbChoice.setText(ViddaTools.adbOn(this)
-                ? getString(R.string.adb_state_on, address.isEmpty() ? "?" : address)
-                : getString(R.string.adb_state, getString(R.string.off)));
+        if (!updateBusy) {
+            updateChoice.setValue(!available.isEmpty() && Updates.compare(available, version) > 0
+                    ? getString(R.string.update_available_value, available)
+                    : getString(R.string.update_current, version), true);
+        }
+        updateBetaChoice.setToggle(Updater.beta(this));
+        if (ViddaTools.adbOn(this)) {
+            adbChoice.setValue(getString(R.string.adb_on_value, address.isEmpty() ? "?" : address), false);
+        } else {
+            adbChoice.setToggle(false);
+        }
+    }
+
+    private SettingsItem defaultHome() {
+        return findViewById(R.id.defaultHomeChoice);
+    }
+
+    private SettingsItem tvSettings() {
+        return findViewById(R.id.tvSettingsChoice);
+    }
+
+    /** A row that does nothing while what it depends on is off: dimmed, and skipped by the remote. */
+    private static void enable(View row, boolean enabled) {
+        row.setEnabled(enabled);
+        row.setFocusable(enabled);
+        row.setAlpha(enabled ? 1f : 0.45f);
     }
 
     /** ADB on asks first (anyone on the network gets a shell while it is on); off is immediate. */
@@ -539,7 +720,7 @@ public final class LauncherSettingsActivity extends Activity {
                 || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
                 || choices.contains(OpenOnStart.KEY) || choices.contains(Config.PARALLAX_KEY)
                 || choices.contains(Config.CLOCK_24H_KEY) || choices.contains(Config.SCREENSAVER_MINUTES_KEY)
-                || choices.contains(Config.SCREENSAVER_STYLE_KEY);
+                || choices.contains(Config.SCREENSAVER_STYLE_KEY) || choices.contains(Config.TOP_SHELF_KEY);
     }
 
     private void open(Intent intent) {

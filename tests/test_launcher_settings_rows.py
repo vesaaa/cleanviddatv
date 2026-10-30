@@ -52,8 +52,8 @@ def row_label(name, strings):
 def row_labels(layout_text, activity_text, strings):
     """Every label the settings screen shows, in screen order, as [(id, label)].
 
-    A row is a view with the settings-row style, or a group label (a 20sp caption naming the
-    numbered choices under it). A settings row with no android:text takes the string its own
+    A row is a view with the settings-row style, or a group label (a caption naming the numbered
+    choices beside it). A settings row with no android:text takes the string its own
     `<id>.setText(getString(R.string.<name>` uses in the activity.
     """
     rows = []
@@ -61,9 +61,9 @@ def row_labels(layout_text, activity_text, strings):
         text = attr(view, "text")
         style = view.get("style") or ""
         if text.startswith("@string/"):
-            # A row that carries its own label (a settings row), or the 20sp caption of a group of
-            # numbered choices. The hints under a row are 14sp and the title is 34sp, so neither is a row.
-            if not (style.endswith("SettingsRow") or attr(view, "textSize") == "20sp"):
+            # A row that carries its own label (a settings row), or the caption of a group of numbered
+            # choices. Hints, page titles and the categories down the left have styles of their own.
+            if not (style.endswith("SettingsRow") or style.endswith("SettingsCaption")):
                 continue
             name = text[len("@string/"):]
         elif style.endswith("SettingsRow"):
@@ -91,8 +91,7 @@ def missing_rows(section, rows):
 def numbered(label, layout_text):
     """The numbers under a label row, in the order the screen shows them (columns, rows below dock).
 
-    The choices sit in a horizontal row of their own, right after the caption, so only that one sibling
-    is read: the next caption on the page belongs to the next setting.
+    The choices sit in the caption's own row, after it, so only its siblings are read.
     """
     root = ET.fromstring(layout_text)
     for parent in root.iter():
@@ -186,7 +185,7 @@ class ScreenRows(unittest.TestCase):
 
     def test_a_screen_with_no_rows_reads_as_no_rows(self):
         layout = ('<ScrollView xmlns:android="http://schemas.android.com/apk/res/android">'
-                  '<TextView android:text="Hi" android:textSize="34sp" /></ScrollView>')
+                  '<TextView android:text="Hi" style="@style/SettingsPageTitle" /></ScrollView>')
         self.assertEqual(row_labels(layout, "", {}), [])
         self.assertEqual(numbered("columns_label", layout), [])
 

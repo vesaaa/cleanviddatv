@@ -38,22 +38,97 @@
         <item name="android:drawablePadding">0dp</item>
     </style>
 
+    <!-- Launcher settings (and the file picker): rows are dark cards that turn white with dark text when focused. -->
     <style name="SettingsRow">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">52dp</item>
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:paddingStart">18dp</item>
-        <item name="android:paddingEnd">18dp</item>
-        <item name="android:background">@drawable/settings_choice_bg</item>
-        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:layout_height">60dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:gravity">center_vertical|start</item>
+        <item name="android:paddingStart">22dp</item>
+        <item name="android:paddingEnd">22dp</item>
+        <item name="android:background">@drawable/settings_row_bg</item>
+        <item name="android:textColor">@color/settings_row_text</item>
         <item name="android:textSize">18sp</item>
+        <item name="android:fontFamily">@string/font_regular</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
     </style>
-    <style name="SettingsColumnChoice" parent="SettingsRow">
+    <!-- A row of numbered choices: the caption on the left, the choices on the right. -->
+    <style name="SettingsGroup">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">68dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">22dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:background">@drawable/settings_group_bg</item>
+    </style>
+    <style name="SettingsCaption">
         <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:layout_marginEnd">10dp</item>
+        <item name="android:textColor">#FFF2F4F7</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:fontFamily">@string/font_regular</item>
+        <item name="android:singleLine">true</item>
+    </style>
+    <style name="SettingsColumnChoice">
+        <item name="android:layout_width">72dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_marginStart">8dp</item>
         <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/settings_chip_bg</item>
+        <item name="android:textColor">@color/settings_chip_text</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:fontFamily">@string/font_medium</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+    <!-- The small grey note under a row. -->
+    <style name="SettingsHint">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:paddingStart">22dp</item>
+        <item name="android:paddingEnd">22dp</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
+        <item name="android:textColor">#FF8A96A3</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <!-- A category in the list on the left. -->
+    <style name="SettingsNav">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">54dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:gravity">center_vertical|start</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:background">@drawable/settings_nav_bg</item>
+        <item name="android:textColor">@color/settings_nav_text</item>
+        <item name="android:textSize">19sp</item>
+        <item name="android:fontFamily">@string/font_medium</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+    <!-- A page's title above its rows. -->
+    <style name="SettingsPageTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:fontFamily">@string/font_light</item>
+    </style>
+    <style name="SettingsPage">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:visibility">gone</item>
     </style>
 </resources>

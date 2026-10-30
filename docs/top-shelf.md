@@ -130,3 +130,7 @@ context.contentResolver.notifyChange(Uri.parse("content://$authority/items"), nu
   焦点在卡片行时，背景出现一团和卡片图片主色一致的柔和光晕，切换卡片时跟着变色，离开卡片行就淡出。
 - 只显示 provider 自己的 `content://<authority>/image/` 图片，单张最多读 1 MB，缩到 512 像素以内。
 - 打开卡片时，Intent 的包名强制设为 provider 所在的应用，去掉 selector、ClipData 和所有 URI 授权标志。
+- **飞牛影视**：飞牛影视的电视应用自己不提供 provider，由桌面代劳。在「设置 → 应用联动 → 飞牛影视」登录 NAS 后，
+  桌面内部的 `FeiniuShelfProvider`（不导出）从飞牛影视服务端读取「继续观看」和「最近添加」，按本接口的列返回卡片，
+  图片也经它缓存后提供；`ShelfSource` 把它当作名字里带「飞牛」的那个应用的 provider，所以卡片打开的是飞牛影视。
+  接口和签名（Authx）来自基于飞牛影视的开源客户端，不是官方公开接口，签名密钥可以在设置里替换。

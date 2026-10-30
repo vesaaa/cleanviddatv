@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A settings row: a dark card, white when focused (the tvOS look), so the focus reads from across the room. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFF2F4F7" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FF1B222B" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+</selector>
