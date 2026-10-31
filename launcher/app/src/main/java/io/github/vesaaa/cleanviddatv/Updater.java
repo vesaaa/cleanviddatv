@@ -133,24 +133,54 @@ final class Updater {
         return view.resolveActivity(pm) != null ? view : null;
     }
 
+    /**
+     * False only when the APK's certificates can be read and differ from this app's. Some TVs return no certificates
+     * for a downloaded archive (signingInfo or signatures null, even for a good v2-signed APK): the checksum from the
+     * release manifest has already matched, and the system installer refuses a different signer by itself.
+     */
     private static boolean sameSigner(Context ctx, File apk) {
         PackageManager pm = ctx.getPackageManager();
         try {
-            PackageInfo archive, installed;
+            PackageInfo installed = pm.getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNATURES);
+            Signature[] own = installed.signatures;
+            Signature[] archive = null;
+            String archivePackage = null;
             if (Build.VERSION.SDK_INT >= 28) {
-                archive = pm.getPackageArchiveInfo(apk.getPath(), PackageManager.GET_SIGNING_CERTIFICATES);
-                installed = pm.getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES);
-                return archive != null && ctx.getPackageName().equals(archive.packageName)
-                        && archive.signingInfo != null && installed.signingInfo != null
-                        && Arrays.equals(archive.signingInfo.getApkContentsSigners(), installed.signingInfo.getApkContentsSigners());
+                PackageInfo a = pm.getPackageArchiveInfo(apk.getPath(), PackageManager.GET_SIGNING_CERTIFICATES);
+                if (a != null) {
+                    archivePackage = a.packageName;
+                    if (a.signingInfo != null) archive = a.signingInfo.getApkContentsSigners();
+                }
+                PackageInfo mine = pm.getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES);
+                if (mine.signingInfo != null) own = mine.signingInfo.getApkContentsSigners();
             }
-            archive = pm.getPackageArchiveInfo(apk.getPath(), PackageManager.GET_SIGNATURES);
-            installed = pm.getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNATURES);
-            Signature[] a = archive == null ? null : archive.signatures;
-            return a != null && ctx.getPackageName().equals(archive.packageName) && Arrays.equals(a, installed.signatures);
+            if (archive == null || archive.length == 0) {
+                PackageInfo a = pm.getPackageArchiveInfo(apk.getPath(), PackageManager.GET_SIGNATURES);
+                if (a != null) {
+                    archivePackage = a.packageName;
+                    archive = a.signatures;
+                }
+            }
+            return signerMatches(ctx.getPackageName(), archivePackage, toBytes(archive), toBytes(own));
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
+    }
+
+    /** The decision behind sameSigner: a readable, different package or certificate set refuses; unreadable passes. */
+    static boolean signerMatches(String ownPackage, String archivePackage, byte[][] archive, byte[][] own) {
+        if (archivePackage != null && !ownPackage.equals(archivePackage)) return false;
+        if (archive == null || archive.length == 0 || own == null || own.length == 0) return true;
+        if (archive.length != own.length) return false;
+        for (int i = 0; i < archive.length; i++) if (!Arrays.equals(archive[i], own[i])) return false;
+        return true;
+    }
+
+    private static byte[][] toBytes(Signature[] sigs) {
+        if (sigs == null) return null;
+        byte[][] out = new byte[sigs.length][];
+        for (int i = 0; i < sigs.length; i++) out[i] = sigs[i].toByteArray();
+        return out;
     }
 
     static HttpURLConnection open(String url) throws IOException {

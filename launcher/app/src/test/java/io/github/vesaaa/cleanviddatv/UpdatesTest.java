@@ -67,4 +67,16 @@ public class UpdatesTest {
                 + "{\"name\":\"CleanViddaTV-" + v + ".apk\",\"browser_download_url\":\"https://github.com/r/" + v + ".apk\"},"
                 + "{\"name\":\"CleanViddaTV-" + v + ".apk.sha256\",\"browser_download_url\":\"https://github.com/r/" + v + ".sha256\"}]}";
     }
+
+    @Test
+    public void signerCheckRefusesOnlyWhatItCanRead() {
+        String pkg = "io.github.vesaaa.cleanviddatv";
+        byte[][] own = {{1, 2, 3}};
+        assertTrue(Updater.signerMatches(pkg, pkg, new byte[][]{{1, 2, 3}}, own));
+        assertFalse(Updater.signerMatches(pkg, pkg, new byte[][]{{9, 9}}, own));
+        assertFalse(Updater.signerMatches(pkg, "other.app", new byte[][]{{1, 2, 3}}, own));
+        // Some TVs read no certificates from a downloaded archive: the installer itself decides then.
+        assertTrue(Updater.signerMatches(pkg, pkg, null, own));
+        assertTrue(Updater.signerMatches(pkg, null, new byte[0][], own));
+    }
 }
